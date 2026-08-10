@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Pipette, Plus, Trash2 } from "lucide-react";
+import { Pipette, Plus, Trash2, RotateCcw, X } from "lucide-react";
 import {
   DEFAULT_SAVED_COLORS,
   MAX_SAVED_COLORS,
@@ -34,6 +34,7 @@ interface ColorPickerPanelProps {
   onChange?: (val: ColorPickerValue) => void;
   onModeChange?: (mode: ColorPickerMode) => void;
   className?: string;
+  onRequestClose?: () => void;
 }
 
 const SAVED_COLORS_STORAGE_KEY = "inventory_saved_colors";
@@ -117,11 +118,18 @@ export const ColorPickerPanel = React.memo(function ColorPickerPanel({
   showModeToggle = true,
   onChange,
   onModeChange,
-  className = ""
+  className = "",
+  onRequestClose
 }: ColorPickerPanelProps) {
-  const [hsv, setHsv] = useState(() => resolveSeed(initialValue));
-  const [alpha, setAlpha] = useState(1);
-  const [mode, setMode] = useState<ColorPickerMode>(initialMode);
+  const initialSeed = useRef({
+    hsv: resolveSeed(initialValue),
+    alpha: 1,
+    mode: initialMode || "palette"
+  });
+
+  const [hsv, setHsv] = useState(initialSeed.current.hsv);
+  const [alpha, setAlpha] = useState(initialSeed.current.alpha);
+  const [mode, setMode] = useState<ColorPickerMode>(initialSeed.current.mode);
   const [format, setFormat] = useState<"hex" | "rgb" | "hsl">("hex");
   const [savedColors, setSavedColors] = useState(() => readSavedColors());
   const [deleteMode, setDeleteMode] = useState(false);
@@ -308,6 +316,27 @@ export const ColorPickerPanel = React.memo(function ColorPickerPanel({
     }
   }, [deleteMode]);
 
+  const canReset = useMemo(() => {
+    const s = initialSeed.current;
+    const eps = 0.01;
+    return (
+      Math.abs(hsv.h - s.hsv.h) > eps ||
+      Math.abs(hsv.s - s.hsv.s) > eps ||
+      Math.abs(hsv.v - s.hsv.v) > eps ||
+      Math.abs(alpha - s.alpha) > eps ||
+      mode !== s.mode
+    );
+  }, [hsv, alpha, mode]);
+
+  const handleReset = useCallback(() => {
+    const s = initialSeed.current;
+    setHsv({ ...s.hsv });
+    setAlpha(s.alpha);
+    setMode(s.mode);
+    setValueDraft(null);
+    setOpacityDraft(null);
+  }, []);
+
   const addDisabled = savedIsFull || alreadySaved;
   const addTitle = savedIsFull
     ? `Saved colours are full (${MAX_SAVED_COLORS} max). Remove one to add another.`
@@ -327,6 +356,19 @@ export const ColorPickerPanel = React.memo(function ColorPickerPanel({
       className={`w-[288px] max-w-full bg-white border border-gray-200 rounded-xl shadow-lg p-4 flex flex-col gap-3.5 select-none ${className}`}
       onKeyDown={handleRootKeyDown}
     >
+      {onRequestClose && (
+        <div className="flex justify-start">
+          <button
+            type="button"
+            onClick={onRequestClose}
+            title="Close"
+            aria-label="Close"
+            className="w-6 h-6 grid place-content-center rounded-md border-none bg-transparent text-gray-500 cursor-pointer transition-colors hover:bg-gray-100 hover:text-gray-800 outline-none focus-visible:outline-2 focus-visible:outline-[#2b579a] focus-visible:outline-offset-2"
+          >
+            <X size={16} />
+          </button>
+        </div>
+      )}
       {showModeToggle && (
         <div className="flex flex-row p-0.5 gap-0.5 bg-gray-100 border border-gray-200 rounded-lg">
           {(["palette", "custom"] as ColorPickerMode[]).map((m) => {
@@ -460,14 +502,26 @@ export const ColorPickerPanel = React.memo(function ColorPickerPanel({
       </div>
 
       <div className="flex flex-row items-center justify-between gap-2">
-        <span className="text-[13px] font-semibold text-gray-700">Saved</span>
+        <div className="inline-flex items-center gap-2">
+          <span className="text-[13px] font-semibold text-gray-700">Saved</span>
+          <button
+            type="button"
+            onClick={handleReset}
+            disabled={!canReset}
+            title="Reset to original colour"
+            aria-label="Reset to original colour"
+            className="inline-flex items-center gap-1 px-2 py-1 rounded-md border-none bg-transparent text-[13px] font-semibold text-gray-900 cursor-pointer transition-colors hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-gray-900"
+          >
+            <RotateCcw size={14} /> Reset
+          </button>
+        </div>
         <div className="inline-flex items-center gap-1 -mx-2 -my-1">
           <button
             type="button"
             disabled={addDisabled}
             title={addTitle}
             onClick={handleAddSaved}
-            className="inline-flex items-center gap-1 px-2 py-1 rounded-md border-none bg-transparent text-[13px] font-semibold text-gray-500 cursor-pointer transition-colors hover:bg-gray-100 hover:text-gray-700 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-gray-500"
+            className="inline-flex items-center gap-1 px-2 py-1 rounded-md border-none bg-transparent text-[13px] font-semibold text-gray-900 cursor-pointer transition-colors hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-gray-900"
           >
             <Plus size={15} /> Add
           </button>
@@ -511,6 +565,14 @@ export const ColorPickerPanel = React.memo(function ColorPickerPanel({
                   className="w-full h-full rounded-full border-none p-0 cursor-pointer transition-transform hover:scale-110"
                   style={{ backgroundColor: c, boxShadow: deleteMode ? "inset 0 0 0 1px rgba(0,0,0,0.1), 0 0 0 2px white, 0 0 0 2px #ef4444" : isActive ? "inset 0 0 0 1px rgba(0,0,0,0.1), 0 0 0 2px white, 0 0 0 4px #2b579a" : "inset 0 0 0 1px rgba(0,0,0,0.1)" }}
                 />
+                {deleteMode && (
+                  <span 
+                    aria-hidden="true" 
+                    className="absolute -top-1 -left-1 w-[14px] h-[14px] rounded-full bg-white border border-gray-300 shadow-sm grid place-content-center pointer-events-none z-[2]"
+                  >
+                    <X size={9} strokeWidth={3} className="text-gray-700" />
+                  </span>
+                )}
               </span>
             );
           })

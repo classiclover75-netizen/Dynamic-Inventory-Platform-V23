@@ -200,10 +200,12 @@ export const ColorPickerPopover = React.memo(function ColorPickerPopover({
           }}
         >
           <ColorPickerPanel
+            key={String(isOpen) + String(value)}
             initialValue={value}
             initialMode={initialMode}
             showModeToggle={showModeToggle}
             onChange={handleChange}
+            onRequestClose={close}
           />
         </div>,
         document.body
