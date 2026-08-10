@@ -21,6 +21,8 @@ import { GripVertical, ArrowDownAZ } from "lucide-react";
 import { RichDropdownSelect } from "./RichDropdownSelect";
 import { SourceAutocompleteInput, useSourceSuggestions } from "./SourceAutocompleteInput";
 import { RetiredSourcesModal } from "./RetiredSourcesModal";
+import { ColorPickerPopover } from "./ColorPickerPopover";
+import { SourceColorChange, buildRowColorUpdates } from "../lib/sourceColorSync";
 
 const RichTextEditor = ({
   value,
@@ -205,12 +207,13 @@ export const AddRowModal = React.memo(
     isLiveTracker = false,
     sourceSuggestionsEnabled = false,
     onToggleSourceSuggestions,
+    onPropagateSourceColors,
   }: {
     isOpen: boolean;
     onClose: () => void;
     onBack?: () => void;
     backText?: string;
-    onSave: (rows: RowData[]) => void;
+    onSave: (rows: RowData[]) => void | Promise<boolean>; // may resolve to false when the save was rejected, for example by a conflict
     onDelete?: (rowId: string) => void;
     columns: Column[];
     editingRow: RowData | null;
@@ -231,6 +234,7 @@ export const AddRowModal = React.memo(
     isLiveTracker?: boolean;
     sourceSuggestionsEnabled?: boolean;
     onToggleSourceSuggestions?: (val: boolean) => void;
+    onPropagateSourceColors?: (page: string, changes: SourceColorChange[], excludeRowId?: string) => void;
   }) => {
     const { toast } = useToast();
     const [blocks, setBlocks] = useState<Record<string, any>[]>([{}]);
@@ -253,6 +257,9 @@ export const AddRowModal = React.memo(
     const sourceSuggestions = useSourceSuggestions(allRows || [], blocks);
     const [retiredModalRowIndex, setRetiredModalRowIndex] = useState<number | null>(null);
 
+    // these are the colour picks made in this session, keyed by lowercased source name so a source changed twice only propagates its final colour, that they are sent on Save, and that they are dropped on Cancel, matching how the rest of the modal already behaves.
+    const pendingColorChangesRef = useRef<Map<string, SourceColorChange>>(new Map());
+
     const editableCols = columns.filter((c) => c.key !== "sr");
 
     useEffect(() => {
@@ -266,6 +273,7 @@ export const AddRowModal = React.memo(
         // Reset history when modal opens
         setHistory([editingRow ? [{ ...editingRow }] : [{}]]);
         setPointer(0);
+        pendingColorChangesRef.current = new Map<string, SourceColorChange>();
       }
     }, [isOpen, editingRow, columns]);
 
@@ -359,6 +367,20 @@ export const AddRowModal = React.memo(
         setPointer(pointer - 1);
         toast("Undo applied (Add Row)");
       }
+    };
+
+    const handleSourceColorChange = (blockIndex: number, sourceName: string, newColor: string) => {
+      if (!sourceName || !newColor) return;
+      const change: SourceColorChange = { source: sourceName, color: newColor };
+      const newBlocks = [...blocks];
+      const block = { ...newBlocks[blockIndex] };
+      const updates = buildRowColorUpdates(block as any, columns, [change]);
+      if (updates) {
+        newBlocks[blockIndex] = { ...block, ...updates };
+        setBlocks(newBlocks);
+      }
+      // it is recorded even when this block already had the colour, because the other rows may still be on the old one.
+      pendingColorChangesRef.current.set(sourceName.trim().toLowerCase(), change);
     };
 
     const handleRedo = () => {
@@ -685,7 +707,26 @@ export const AddRowModal = React.memo(
       if (!preparedRows.length)
         return toast("Please enter at least one row with data");
 
-      onSave(preparedRows);
+      const saveResult = onSave(preparedRows);
+      
+      if (!onPropagateSourceColors || pendingColorChangesRef.current.size === 0) return;
+      
+      const changes = Array.from(pendingColorChangesRef.current.values()) as SourceColorChange[];
+      pendingColorChangesRef.current = new Map<string, SourceColorChange>();
+      
+      const propagate = () => {
+        // the edited row is already covered by onSave, so it is skipped here to keep two writes off the same row
+        onPropagateSourceColors(activePage, changes, editingRow?.id);
+      };
+      
+      // the other rows are only recoloured once this row has actually been stored, because a rejected save such as a conflict would otherwise leave the rest of the page on a colour this row never got.
+      if (saveResult && typeof (saveResult as any).then === 'function') {
+        (saveResult as Promise<boolean>).then((success) => {
+          if (success !== false) propagate();
+        });
+      } else {
+        propagate();
+      }
     };
 
     return (
@@ -1030,6 +1071,15 @@ export const AddRowModal = React.memo(
                                           }}
                                         />
                                         <div className="flex items-center ml-auto shrink-0 gap-1">
+                                          <ColorPickerPopover
+                                            value={src.color}
+                                            initialMode="palette"
+                                            showModeToggle={false}
+                                            hideSwatch={true}
+                                            label={src.source ? `Change colour for ${src.source}` : "Change colour for this source"}
+                                            onChange={(val) => handleSourceColorChange(i, src.source, val.chipClass)}
+                                            className="shrink-0"
+                                          />
                                           <button
                                             type="button"
                                             className="text-gray-600 hover:text-gray-800 flex items-center justify-center p-1 rounded hover:bg-gray-100 transition-colors shrink-0"

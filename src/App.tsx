@@ -65,6 +65,7 @@ import { useTrackerSourcePreload } from "./hooks/useTrackerSourcePreload";
 import { useTableHover } from "./hooks/useTableHover";
 import { useSaveActions } from "./hooks/useSaveActions";
 import { useInlineEdit } from "./hooks/useInlineEdit";
+import { useSourceColorSync } from "./hooks/useSourceColorSync";
 import { filterAndSortTrackerRows } from "./lib/trackerSortUtils";
 import { findAllLinkedTrackers, buildTrackerOrder } from "./lib/trackerOrderSync";
 import { createPageSafe, renamePageSafe, deletePageSafe } from "./lib/pageMutations";
@@ -1062,6 +1063,12 @@ function AppContent() {
     setReturnToSettings,
     refetchAndHydrateState,
     loadPageData: fetchPageData,
+  });
+
+  const { handlePropagateSourceColors } = useSourceColorSync({
+    state,
+    setState,
+    toast,
   });
 
   const handleSaveColumnWidth = useCallback(async (colId: string, newWidth: number, targetPageOverride?: string) => {
@@ -2481,6 +2488,7 @@ function AppContent() {
         }}
         onClose={closeAllModals}
         onApplySourceToAll={handleApplySourceToAll}
+        onPropagateSourceColors={handlePropagateSourceColors}
         onBack={
           returnToImagePreview
             ? () => {
