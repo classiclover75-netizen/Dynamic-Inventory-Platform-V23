@@ -58,23 +58,26 @@ export type ChipRender =
   | { kind: "style"; style: CSSProperties };
 
 export function resolveChipRender(color: unknown): ChipRender {
-  if (typeof color === "string" && color.trim() !== "" && isCustomColor(color)) {
-    const parsed = parseCustomColor(color);
-    if (parsed) {
-      const bgRgba = `rgba(${parsed.rgb[0]}, ${parsed.rgb[1]}, ${parsed.rgb[2]}, ${parsed.alpha})`;
-      const textCol = readableTextColor(parsed.rgb);
+  if (typeof color === "string" && color.trim() !== "") {
+    if (isCustomColor(color)) {
+      const parsed = parseCustomColor(color);
+      if (parsed) {
+        const bgRgba = `rgba(${parsed.rgb[0]}, ${parsed.rgb[1]}, ${parsed.rgb[2]}, ${parsed.alpha})`;
+        const textCol = readableTextColor(parsed.rgb);
+        return {
+          kind: "style",
+          style: {
+            backgroundColor: bgRgba,
+            color: textCol,
+            borderColor: bgRgba
+          }
+        };
+      }
       return {
-        kind: "style",
-        style: {
-          backgroundColor: bgRgba,
-          color: textCol,
-          borderColor: bgRgba
-        }
+        kind: "class",
+        className: "bg-gray-100 text-gray-800 border-gray-200"
       };
     }
-  }
-  
-  if (typeof color === "string" && color.trim() !== "") {
     return {
       kind: "class",
       className: color
