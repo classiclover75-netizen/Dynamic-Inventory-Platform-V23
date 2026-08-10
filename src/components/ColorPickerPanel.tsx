@@ -15,6 +15,7 @@ import {
   rgbToHsl,
   rgbToHsv,
 } from "../lib/colorUtils";
+import { buildCustomColor } from "../lib/colorRender";
 
 export type ColorPickerMode = "palette" | "custom";
 
@@ -166,7 +167,7 @@ export const ColorPickerPanel = React.memo(function ColorPickerPanel({
         alpha,
         rgb,
         family,
-        chipClass: mode === "palette" ? family.chipClass : ""
+        chipClass: mode === "palette" ? family.chipClass : buildCustomColor(hex, Math.round(alpha * 100))
       });
     }
   }, [mode, hex, alpha, rgb, family]);
