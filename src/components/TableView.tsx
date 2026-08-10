@@ -13,6 +13,7 @@ import { getVisibleSaleSources, getCurrentSaleColumnKey } from '../lib/saleColum
 import { ArchivedSaleSourceAdder } from './ArchivedSaleSourceAdder';
 import { getInlineRetiredSourceNames } from '../lib/inlineRetiredHelper';
 import { isLocked, toggleLockInTotalQty } from '../lib/sourceLockUtils';
+import { resolveChipRender, resolveBorderAccent } from '../lib/colorRender';
 
 export const TableView = ({
   activeFilterSaleCol,
@@ -819,12 +820,19 @@ export const TableView = ({
                                           className={`p-1.5 border-r-[length:medium] border-b-[length:medium] border-[#e0e0e0] overflow-hidden whitespace-pre-wrap bg-purple-50 text-purple-900 font-bold text-center`}
                                         >
                                           <div className="flex flex-col gap-1 justify-center w-full min-h-[20px]">
-                                            {breakdown.map((b: any, idx: number) => (
-                                              <div key={idx} className={`w-full px-1.5 py-0.5 rounded text-[14px] font-bold border flex items-center justify-between gap-1 shadow-sm ${b.color}`}>
-                                                <span className="opacity-70 shrink-0 capitalize"><span className="mr-1">{formatSourceNumber(idx)}</span>{b.source}:</span>
-                                                <span className="flex-1 text-right">{b.qty}</span>
-                                              </div>
-                                            ))}
+                                            {breakdown.map((b: any, idx: number) => {
+                                              const render = resolveChipRender(b.color);
+                                              return (
+                                                <div 
+                                                  key={idx} 
+                                                  className={`w-full px-1.5 py-0.5 rounded text-[14px] font-bold border flex items-center justify-between gap-1 shadow-sm ${render.kind === 'class' ? render.className : ""}`}
+                                                  style={render.kind === 'style' ? render.style : undefined}
+                                                >
+                                                  <span className="opacity-70 shrink-0 capitalize"><span className="mr-1">{formatSourceNumber(idx)}</span>{b.source}:</span>
+                                                  <span className="flex-1 text-right">{b.qty}</span>
+                                                </div>
+                                              );
+                                            })}
                                             <div className="mt-1 pt-1 border-t border-purple-200 text-purple-900 font-extrabold text-[15px] flex items-center justify-between w-full">
                                               <span className="opacity-50 text-[11px] uppercase tracking-wider">Total</span>
                                               <span>{rawVal}</span>
@@ -879,12 +887,15 @@ export const TableView = ({
                                             {remainingSources.map(
                                               (s: any, idx: number) => {
                                                 const locked = isLocked(s);
+                                                const alert = s.remaining <= (config.minStockAlert ?? 0);
+                                                const render = alert ? null : resolveChipRender(s.color);
                                                 return (
                                                   <div
                                                     key={idx}
-                                                    className={`px-2 py-0.5 rounded text-[14px] font-bold border flex items-center gap-1 ${s.remaining <= (config.minStockAlert ?? 0) ? "bg-[#FF0000] text-white border-[#cc0000] shadow-md" : s.color} ${locked ? "opacity-50 grayscale" : ""}`}
+                                                    className={`px-2 py-0.5 rounded text-[14px] font-bold border flex items-center gap-1 ${alert ? "bg-[#FF0000] text-white border-[#cc0000] shadow-md" : (render?.kind === 'class' ? render.className : '')} ${locked ? "opacity-50 grayscale" : ""}`}
+                                                    style={render?.kind === 'style' ? render.style : undefined}
                                                   >
-                                                    <span className={`${s.remaining <= (config.minStockAlert ?? 0) ? "text-white font-extrabold opacity-100" : "opacity-70"} flex items-center`}>
+                                                    <span className={`${alert ? "text-white font-extrabold opacity-100" : "opacity-70"} flex items-center`}>
                                                       <span className="mr-1">{formatSourceNumber(totalSources.findIndex((ts: any) => ts.source === s.source))}</span>{s.source}:{locked && <span className="ml-1 text-[10px]">🔒</span>}
                                                     </span>{" "}
                                                     <span>{s.remaining}</span>
@@ -923,6 +934,7 @@ export const TableView = ({
                                             {active.map(
                                               (s: any, idx: number) => {
                                                 const locked = isLocked(s);
+                                                const render = resolveChipRender(s.color);
                                                 return (
                                                   <div
                                                     key={idx}
@@ -930,7 +942,8 @@ export const TableView = ({
                                                       e.stopPropagation();
                                                       if (onOpenActiveSourceOverview) onOpenActiveSourceOverview([s.source]);
                                                     }}
-                                                    className={`group px-2 py-0.5 rounded text-[14px] font-bold border flex items-center justify-between gap-1 ${s.color} cursor-pointer hover:opacity-80 transition-opacity ${locked ? "opacity-50 grayscale" : ""}`}
+                                                    className={`group px-2 py-0.5 rounded text-[14px] font-bold border flex items-center justify-between gap-1 ${render.kind === 'class' ? render.className : ""} cursor-pointer hover:opacity-80 transition-opacity ${locked ? "opacity-50 grayscale" : ""}`}
+                                                    style={render.kind === 'style' ? render.style : undefined}
                                                   >
                                                     <div className="flex items-center gap-1">
                                                       <span className="opacity-70 flex items-center">
@@ -960,22 +973,26 @@ export const TableView = ({
                                               </div>
                                             )}
                                             {inlineRetired.map(
-                                              (s: any, idx: number) => (
-                                                <div
-                                                  key={`inline-ret-${idx}`}
-                                                  onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    if (onOpenRetiredOverview) onOpenRetiredOverview([s.source]);
-                                                  }}
-                                                  className={`px-2 py-0.5 rounded text-[14px] font-bold border flex items-center gap-1 ${s.color} cursor-pointer hover:opacity-80 transition-opacity`}
-                                                >
-                                                  <span className="opacity-70">
-                                                    <span className="mr-1">{formatSourceNumber(totalSources.findIndex((ts: any) => ts.source === s.source))}</span>{s.source}:
-                                                  </span>{" "}
-                                                  <span>{s.qty}</span>
-                                                  <span className="ml-auto text-xs font-semibold text-red-700 bg-red-100 px-1.5 py-0.5 rounded-full whitespace-nowrap">(retired)</span>
-                                                </div>
-                                              ),
+                                              (s: any, idx: number) => {
+                                                const render = resolveChipRender(s.color);
+                                                return (
+                                                  <div
+                                                    key={`inline-ret-${idx}`}
+                                                    onClick={(e) => {
+                                                      e.stopPropagation();
+                                                      if (onOpenRetiredOverview) onOpenRetiredOverview([s.source]);
+                                                    }}
+                                                    className={`px-2 py-0.5 rounded text-[14px] font-bold border flex items-center gap-1 ${render.kind === 'class' ? render.className : ""} cursor-pointer hover:opacity-80 transition-opacity`}
+                                                    style={render.kind === 'style' ? render.style : undefined}
+                                                  >
+                                                    <span className="opacity-70">
+                                                      <span className="mr-1">{formatSourceNumber(totalSources.findIndex((ts: any) => ts.source === s.source))}</span>{s.source}:
+                                                    </span>{" "}
+                                                    <span>{s.qty}</span>
+                                                    <span className="ml-auto text-xs font-semibold text-red-700 bg-red-100 px-1.5 py-0.5 rounded-full whitespace-nowrap">(retired)</span>
+                                                  </div>
+                                                );
+                                              }
                                             )}
                                             {chipRetired.length > 0 && config.showRetiredChipInTotalQty !== false && (
                                               <div className="relative mt-1">
@@ -1051,9 +1068,13 @@ export const TableView = ({
                                                 const originalQty = originalSaleEntry ? originalSaleEntry.qty : 0;
 
                                                 const locked = isLocked(ts);
+                                                const render = resolveChipRender(ts.color);
                                                 return (
                                                   <div key={idx} className="w-full">
-                                                    <div className={`group w-full px-1.5 py-0.5 rounded text-[14px] font-bold border flex items-center justify-between gap-1 ${ts.color} ${locked ? "opacity-50 grayscale" : ""}`}>
+                                                    <div 
+                                                      className={`group w-full px-1.5 py-0.5 rounded text-[14px] font-bold border flex items-center justify-between gap-1 ${render.kind === 'class' ? render.className : ""} ${locked ? "opacity-50 grayscale" : ""}`}
+                                                      style={render.kind === 'style' ? render.style : undefined}
+                                                    >
                                                       <div className="flex items-center justify-between w-full">
                                                         <div className="opacity-70 shrink-0 flex flex-col items-start justify-center">
                                                           <span className="flex items-center">
@@ -1086,13 +1107,16 @@ export const TableView = ({
                                                     {isThisRowEditing && (
                                                       <div 
                                                         className="absolute z-[999999] top-0 right-0 bg-white p-3 rounded-lg shadow-[0_5px_20px_rgba(0,0,0,0.5)] border-[3px] flex flex-col gap-4 min-w-[240px]"
-                                                        style={{ borderColor: ts.color?.includes('blue') ? '#3b82f6' : ts.color?.includes('green') ? '#22c55e' : ts.color?.includes('yellow') ? '#eab308' : ts.color?.includes('red') ? '#ef4444' : ts.color?.includes('purple') ? '#a855f7' : '#94a3b8' }}
+                                                        style={{ borderColor: resolveBorderAccent(ts.color) }}
                                                         onClick={(e) => e.stopPropagation()}
                                                       >
                                                         <div className="font-bold text-gray-700 text-[14px]">Edit Sale for {ts.source}</div>
                                                         <div className="text-[11px] text-gray-500 mb-2 -mt-0.5">Previous Value: <span className="font-bold text-gray-800">{originalQty}</span></div>
                                                         <div className="flex items-center justify-between gap-2 border-b pb-3">
-                                                          <span className={`px-2 py-1 rounded text-[15px] font-bold border ${ts.color}`}>{ts.source}</span>
+                                                          <span 
+                                                            className={`px-2 py-1 rounded text-[15px] font-bold border ${render.kind === 'class' ? render.className : ""}`}
+                                                            style={render.kind === 'style' ? render.style : undefined}
+                                                          >{ts.source}</span>
                                                           <input
                                                             type="number"
                                                             value={saleQty === 0 ? "0" : saleQty || ""}
