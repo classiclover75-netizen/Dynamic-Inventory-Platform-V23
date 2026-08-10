@@ -23,6 +23,7 @@ import { SourceAutocompleteInput, useSourceSuggestions } from "./SourceAutocompl
 import { RetiredSourcesModal } from "./RetiredSourcesModal";
 import { ColorPickerPopover } from "./ColorPickerPopover";
 import { SourceColorChange, buildRowColorUpdates } from "../lib/sourceColorSync";
+import { resolveChipRender } from "../lib/colorRender";
 
 const RichTextEditor = ({
   value,
@@ -1020,36 +1021,41 @@ export const AddRowModal = React.memo(
                                                 </div>
                                                 <div className="flex-[2] min-w-[100px] flex items-center gap-1">
                                                   {!retired && isLocked(src) && <span className="text-[10px]">🔒</span>}
-                                                  <textarea
-                                                    ref={(el) => {
-                                                      if (el && !el.style.height) {
-                                                        el.style.height = 'auto';
-                                                        el.style.height = el.scrollHeight + 'px';
-                                                      }
-                                                    }}
-                                                    className={`w-full box-border text-[14px] px-1.5 py-0.5 rounded font-bold border border-transparent hover:border-gray-300 outline-none transition-colors resize-none overflow-hidden break-words whitespace-normal ${src.color}`}
-                                                    value={src.source}
-                                                    rows={1}
-                                                    style={{ fieldSizing: "content", minHeight: "28px" } as any}
-                                                    onChange={(e) => {
-                                                      e.target.style.height = 'auto';
-                                                      e.target.style.height = e.target.scrollHeight + 'px';
-                                                      const copyActive = [...activeSources];
-                                                      const oldName = copyActive[idx].source;
-                                                      const newName = e.target.value;
-                                                      copyActive[idx].source = newName;
-                                                      const newAll = [...copyActive, ...retiredSources];
-                                                      if (oldName !== newName) {
-                                                        handleSourceRename(i, oldName, newName, newAll);
-                                                      } else {
-                                                        handleUpdateField(
-                                                          i,
-                                                          col.key,
-                                                          JSON.stringify(newAll),
-                                                        );
-                                                      }
-                                                    }}
-                                                  />
+                                                  {(() => {
+                                                    const render = resolveChipRender(src.color);
+                                                    return (
+                                                      <textarea
+                                                        ref={(el) => {
+                                                          if (el && !el.style.height) {
+                                                            el.style.height = 'auto';
+                                                            el.style.height = el.scrollHeight + 'px';
+                                                          }
+                                                        }}
+                                                        className={`w-full box-border text-[14px] px-1.5 py-0.5 rounded font-bold border border-transparent hover:border-gray-300 outline-none transition-colors resize-none overflow-hidden break-words whitespace-normal ${render.kind === 'class' ? render.className : ''}`}
+                                                        value={src.source}
+                                                        rows={1}
+                                                        style={{ fieldSizing: "content", minHeight: "28px", ...(render.kind === 'style' ? render.style : {}) } as any}
+                                                        onChange={(e) => {
+                                                          e.target.style.height = 'auto';
+                                                          e.target.style.height = e.target.scrollHeight + 'px';
+                                                          const copyActive = [...activeSources];
+                                                          const oldName = copyActive[idx].source;
+                                                          const newName = e.target.value;
+                                                          copyActive[idx].source = newName;
+                                                          const newAll = [...copyActive, ...retiredSources];
+                                                          if (oldName !== newName) {
+                                                            handleSourceRename(i, oldName, newName, newAll);
+                                                          } else {
+                                                            handleUpdateField(
+                                                              i,
+                                                              col.key,
+                                                              JSON.stringify(newAll),
+                                                            );
+                                                          }
+                                                        }}
+                                                      />
+                                                    );
+                                                  })()}
                                                 </div>
                                         <Input
                                           type="number"
@@ -1074,7 +1080,7 @@ export const AddRowModal = React.memo(
                                           <ColorPickerPopover
                                             value={src.color}
                                             initialMode="palette"
-                                            showModeToggle={false}
+                                            showModeToggle={true}
                                             hideSwatch={true}
                                             label={src.source ? `Change colour for ${src.source}` : "Change colour for this source"}
                                             onChange={(val) => handleSourceColorChange(i, src.source, val.chipClass)}
@@ -1267,11 +1273,17 @@ export const AddRowModal = React.memo(
                                         key={idx}
                                         className="flex flex-wrap sm:flex-nowrap w-full box-border gap-2 items-center bg-white p-1 rounded shadow-sm border border-gray-100"
                                       >
-                                        <span
-                                          className={`text-[14px] px-1.5 py-0.5 rounded font-bold flex-[2] min-w-[100px] break-words whitespace-normal ${ts.color}`}
-                                        >
-                                          {ts.source}
-                                        </span>
+                                        {(() => {
+                                          const render = resolveChipRender(ts.color);
+                                          return (
+                                            <span
+                                              className={`text-[14px] px-1.5 py-0.5 rounded font-bold flex-[2] min-w-[100px] break-words whitespace-normal ${render.kind === 'class' ? render.className : ''}`}
+                                              style={render.kind === 'style' ? render.style : undefined}
+                                            >
+                                              {ts.source}
+                                            </span>
+                                          );
+                                        })()}
                                         <Input
                                           type="number"
                                           onFocus={(e) => e.target.select()}
