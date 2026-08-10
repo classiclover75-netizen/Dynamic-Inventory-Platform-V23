@@ -64,10 +64,19 @@ export const ColorPickerPopover = React.memo(function ColorPickerPopover({
   const [isHovered, setIsHovered] = useState(false);
   const [hasFocus, setHasFocus] = useState(false);
   const [position, setPosition] = useState<{ top: number; left: number } | null>(null);
+  const [openCount, setOpenCount] = useState(0);
 
   const triggerRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const latestValueRef = useRef<ColorPickerValue | null>(null);
+  const wasOpen = useRef(false);
+
+  useEffect(() => {
+    if (isOpen && !wasOpen.current) {
+      setOpenCount(c => c + 1);
+    }
+    wasOpen.current = isOpen;
+  }, [isOpen]);
 
   const canHover = useCanHover();
 
@@ -200,7 +209,7 @@ export const ColorPickerPopover = React.memo(function ColorPickerPopover({
           }}
         >
           <ColorPickerPanel
-            key={String(isOpen) + String(value)}
+            key={String(openCount)}
             initialValue={value}
             initialMode={initialMode}
             showModeToggle={showModeToggle}

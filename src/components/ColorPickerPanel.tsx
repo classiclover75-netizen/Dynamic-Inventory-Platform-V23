@@ -357,7 +357,7 @@ export const ColorPickerPanel = React.memo(function ColorPickerPanel({
       onKeyDown={handleRootKeyDown}
     >
       {onRequestClose && (
-        <div className="flex justify-start">
+        <div className="flex justify-end">
           <button
             type="button"
             onClick={onRequestClose}
