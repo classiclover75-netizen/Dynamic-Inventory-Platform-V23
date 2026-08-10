@@ -320,7 +320,7 @@ export const ColorPickerPanel = React.memo(function ColorPickerPanel({
     ? "No saved colours to delete"
     : deleteMode
       ? "Exit delete mode"
-      : "color slot delete";
+      : "Color Slot Delete";
 
   return (
     <div 
