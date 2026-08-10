@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Pipette, Plus, Trash2 } from "lucide-react";
+import { Pipette, Plus, X } from "lucide-react";
 import {
   DEFAULT_SAVED_COLORS,
   MAX_SAVED_COLORS,
@@ -124,13 +124,6 @@ export const ColorPickerPanel = React.memo(function ColorPickerPanel({
   const [mode, setMode] = useState<ColorPickerMode>(initialMode);
   const [format, setFormat] = useState<"hex" | "rgb" | "hsl">("hex");
   const [savedColors, setSavedColors] = useState(() => readSavedColors());
-  const [deleteMode, setDeleteMode] = useState(false);
-
-  useEffect(() => {
-    if (savedColors.length === 0) {
-      setDeleteMode(false);
-    }
-  }, [savedColors.length]);
   
   // While a field is being typed in, its raw draft text wins so the caret and any half-finished value are left alone.
   // null means show the derived value instead.
@@ -293,21 +286,6 @@ export const ColorPickerPanel = React.memo(function ColorPickerPanel({
     if (onModeChange) onModeChange(m);
   }, [onModeChange]);
 
-  const handleToggleDeleteMode = useCallback(() => {
-    if (savedColors.length === 0) {
-      setDeleteMode(false);
-      return;
-    }
-    setDeleteMode(prev => !prev);
-  }, [savedColors.length]);
-
-  const handleRootKeyDown = useCallback((e: React.KeyboardEvent<HTMLDivElement>) => {
-    if (deleteMode && e.key === "Escape") {
-      setDeleteMode(false);
-      e.stopPropagation();
-    }
-  }, [deleteMode]);
-
   const addDisabled = savedIsFull || alreadySaved;
   const addTitle = savedIsFull
     ? `Saved colours are full (${MAX_SAVED_COLORS} max). Remove one to add another.`
@@ -315,18 +293,8 @@ export const ColorPickerPanel = React.memo(function ColorPickerPanel({
       ? "Colour already saved"
       : "Save this colour";
 
-  const deleteDisabled = savedColors.length === 0;
-  const deleteTitle = savedColors.length === 0
-    ? "No saved colours to delete"
-    : deleteMode
-      ? "Exit delete mode"
-      : "color slot delete";
-
   return (
-    <div 
-      className={`w-[288px] max-w-full bg-white border border-gray-200 rounded-xl shadow-lg p-4 flex flex-col gap-3.5 select-none ${className}`}
-      onKeyDown={handleRootKeyDown}
-    >
+    <div className={`w-[288px] max-w-full bg-white border border-gray-200 rounded-xl shadow-lg p-4 flex flex-col gap-3.5 select-none ${className}`}>
       {showModeToggle && (
         <div className="flex flex-row p-0.5 gap-0.5 bg-gray-100 border border-gray-200 rounded-lg">
           {(["palette", "custom"] as ColorPickerMode[]).map((m) => {
@@ -461,28 +429,15 @@ export const ColorPickerPanel = React.memo(function ColorPickerPanel({
 
       <div className="flex flex-row items-center justify-between gap-2">
         <span className="text-[13px] font-semibold text-gray-700">Saved</span>
-        <div className="inline-flex items-center gap-1 -mx-2 -my-1">
-          <button
-            type="button"
-            disabled={addDisabled}
-            title={addTitle}
-            onClick={handleAddSaved}
-            className="inline-flex items-center gap-1 px-2 py-1 rounded-md border-none bg-transparent text-[13px] font-semibold text-gray-500 cursor-pointer transition-colors hover:bg-gray-100 hover:text-gray-700 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-gray-500"
-          >
-            <Plus size={15} /> Add
-          </button>
-          <button
-            type="button"
-            disabled={deleteDisabled}
-            title={deleteTitle}
-            aria-label={deleteTitle}
-            aria-pressed={deleteMode}
-            onClick={handleToggleDeleteMode}
-            className={`inline-flex items-center justify-center px-2 py-1 rounded-md border-none cursor-pointer transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-gray-500 ${deleteMode ? "bg-red-100 text-red-600" : "bg-transparent text-gray-500 hover:bg-gray-100 hover:text-red-600"}`}
-          >
-            <Trash2 size={15} />
-          </button>
-        </div>
+        <button
+          type="button"
+          disabled={addDisabled}
+          title={addTitle}
+          onClick={handleAddSaved}
+          className="inline-flex items-center gap-1 -mx-2 -my-1 px-2 py-1 rounded-md border-none bg-transparent text-[13px] font-semibold text-gray-500 cursor-pointer transition-colors hover:bg-gray-100 hover:text-gray-700 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-gray-500"
+        >
+          <Plus size={15} /> Add
+        </button>
       </div>
 
       <div className="flex flex-row flex-wrap gap-2 min-h-[26px]">
@@ -492,25 +447,25 @@ export const ColorPickerPanel = React.memo(function ColorPickerPanel({
           savedColors.map(c => {
             const isActive = c === hex;
             return (
-              <span key={c} className="relative w-[26px] h-[26px]">
+              <span key={c} className="group relative w-[26px] h-[26px]">
                 <button
                   type="button"
-                  title={deleteMode ? `Delete ${c}` : c}
-                  aria-label={deleteMode ? `Delete ${c}` : `Use ${c}`}
+                  title={c}
+                  aria-label={`Use ${c}`}
                   aria-pressed={isActive}
-                  onClick={() => { 
-                    if (deleteMode) {
-                      handleRemoveSaved(c);
-                    } else {
-                      applyHex(c); 
-                      setAlpha(1); 
-                      setValueDraft(null); 
-                      setOpacityDraft(null); 
-                    }
-                  }}
+                  onClick={() => { applyHex(c); setAlpha(1); setValueDraft(null); setOpacityDraft(null); }}
                   className="w-full h-full rounded-full border-none p-0 cursor-pointer transition-transform hover:scale-110"
-                  style={{ backgroundColor: c, boxShadow: deleteMode ? "inset 0 0 0 1px rgba(0,0,0,0.1), 0 0 0 2px white, 0 0 0 2px #ef4444" : isActive ? "inset 0 0 0 1px rgba(0,0,0,0.1), 0 0 0 2px white, 0 0 0 4px #2b579a" : "inset 0 0 0 1px rgba(0,0,0,0.1)" }}
+                  style={{ backgroundColor: c, boxShadow: isActive ? "inset 0 0 0 1px rgba(0,0,0,0.1), 0 0 0 2px white, 0 0 0 4px #2b579a" : "inset 0 0 0 1px rgba(0,0,0,0.1)" }}
                 />
+                <button
+                  type="button"
+                  title="Remove"
+                  aria-label={`Remove ${c}`}
+                  onClick={(e) => { e.stopPropagation(); handleRemoveSaved(c); }}
+                  className="absolute -top-[1px] -right-[1px] w-[15px] h-[15px] rounded-full border border-gray-200 bg-white text-gray-500 z-[2] p-0 cursor-pointer hidden group-hover:grid focus-visible:grid place-content-center hover:text-red-500 hover:border-red-500"
+                >
+                  <X size={9} strokeWidth={3.4} />
+                </button>
               </span>
             );
           })
