@@ -11,6 +11,7 @@ export interface RetiredItemInfo {
 
 export interface RetiredSourceOverview {
   sourceName: string;
+  color?: string;
   itemCount: number;
   totalRetiredQty: number;
   lastRetiredAt?: number;
@@ -67,6 +68,7 @@ export function buildRetiredOverview(rows: any[], columns: any[]): RetiredSource
       if (!sourceMap.has(sourceName)) {
         sourceMap.set(sourceName, {
           sourceName,
+          color: rs.color,
           itemCount: 0,
           totalRetiredQty: 0,
           lastRetiredAt: typeof rs.retiredAt === 'number' ? rs.retiredAt : undefined,
@@ -104,6 +106,7 @@ export function buildRetiredOverview(rows: any[], columns: any[]): RetiredSource
 export interface FlatRetiredRow {
   _originalRowId: string;
   _retiredSourceName: string;
+  _retiredSourceColor?: string;
   _retiredQty: number;
   _totalSales: number;
   _isLocked?: boolean;
@@ -142,6 +145,7 @@ export function buildFlatRetiredRows(rows: any[], columns: any[]): FlatRetiredRo
         ...row,
         _originalRowId: row.id,
         _retiredSourceName: sourceName,
+        _retiredSourceColor: rs.color,
         _retiredQty: retiredQty,
         _totalSales: tSales,
         _isLocked: isLocked(rs)

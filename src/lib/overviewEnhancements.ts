@@ -138,7 +138,7 @@ export function getStatusCounts(rows: any[], visibleSources: Set<string>): Sourc
     return Array.from(counts.values());
 }
 
-export function buildMixedFlatRows(rows: any[], columns: any[], baseSources: Set<string>, sourceProp: string, qtyProp: string): any[] {
+export function buildMixedFlatRows(rows: any[], columns: any[], baseSources: Set<string>, sourceProp: string, qtyProp: string, colorProp: string): any[] {
     const saleCols = columns.filter((c: any) => c.type === 'sale_tracker');
     const flatRows: any[] = [];
 
@@ -172,6 +172,7 @@ export function buildMixedFlatRows(rows: any[], columns: any[], baseSources: Set
                 _originalRowId: row.id,
                 [sourceProp]: sourceName,
                 [qtyProp]: qty,
+                [colorProp]: rs.color,
                 _totalSales: tSales,
                 _isRetired: isRetired(rs),
                 _isLocked: isLocked(rs)

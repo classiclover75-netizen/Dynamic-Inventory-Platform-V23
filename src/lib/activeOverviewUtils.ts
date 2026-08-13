@@ -11,6 +11,7 @@ export interface ActiveItemInfo {
 
 export interface ActiveSourceOverview {
   sourceName: string;
+  color?: string;
   itemCount: number;
   totalActiveQty: number;
   lastActiveAt?: number;
@@ -67,6 +68,7 @@ export function buildActiveOverview(rows: any[], columns: any[]): ActiveSourceOv
       if (!sourceMap.has(sourceName)) {
         sourceMap.set(sourceName, {
           sourceName,
+          color: rs.color,
           itemCount: 0,
           totalActiveQty: 0,
           lastActiveAt: typeof rs.retiredAt === 'number' ? rs.retiredAt : undefined,
@@ -104,6 +106,7 @@ export function buildActiveOverview(rows: any[], columns: any[]): ActiveSourceOv
 export interface FlatActiveRow {
   _originalRowId: string;
   _activeSourceName: string;
+  _activeSourceColor?: string;
   _activeQty: number;
   _totalSales: number;
   _isLocked?: boolean;
@@ -142,6 +145,7 @@ export function buildFlatActiveRows(rows: any[], columns: any[]): FlatActiveRow[
         ...row,
         _originalRowId: row.id,
         _activeSourceName: sourceName,
+        _activeSourceColor: rs.color,
         _activeQty: activeQty,
         _totalSales: tSales,
         _isLocked: isLocked(rs)

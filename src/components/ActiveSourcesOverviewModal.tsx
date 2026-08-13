@@ -7,6 +7,7 @@ import { buildFlatActiveRows, buildActiveOverview, FlatActiveRow } from '../lib/
 import { parseMultiSource } from '../lib/appUtils';
 import { isRetired } from '../lib/sourceArchiveUtils';
 import { sortOverviewRows, getStatusCounts, buildMixedFlatRows } from '../lib/overviewEnhancements';
+import { resolveChipRender } from '../lib/colorRender';
 import { useOverviewColumnPin } from '../hooks/useOverviewColumnPin';
 import { Modal, Button, Input } from './ui';
 import { useToast } from './ToastProvider';
@@ -132,7 +133,7 @@ export function ActiveSourcesOverviewModal({
     if (showAllStatuses) {
       const baseRows = buildFlatActiveRows(rows, columns);
       const baseSources = new Set<string>(baseRows.map((r: any) => r._activeSourceName));
-      return buildMixedFlatRows(rows, columns, baseSources, '_activeSourceName', '_activeQty');
+      return buildMixedFlatRows(rows, columns, baseSources, '_activeSourceName', '_activeQty', '_activeSourceColor');
     }
     return buildFlatActiveRows(rows, columns);
   }, [isOpen, rows, columns, showAllStatuses]);
@@ -531,7 +532,17 @@ export function ActiveSourcesOverviewModal({
                                 setSelectedSources(next);
                              }}
                            />
-                           <span className="font-bold flex-1">{s.sourceName}</span>
+                           {(() => {
+                             const render = s.color ? resolveChipRender(s.color) : null;
+                             return (
+                               <span 
+                                 className={`font-bold flex-1 ${render ? `px-1.5 py-0.5 rounded border ${render.kind === 'class' ? render.className : ''}` : ""}`} 
+                                 style={render?.kind === 'style' ? render.style : undefined}
+                               >
+                                 {s.sourceName}
+                               </span>
+                             );
+                           })()}
                            <span className="text-[10px] text-gray-500 bg-gray-200 px-2 py-0.5 rounded-full shrink-0">
                              {s.itemCount} items, qty {s.totalActiveQty}
                            </span>
@@ -625,7 +636,17 @@ export function ActiveSourcesOverviewModal({
                 <tr key={`${row._originalRowId}-${row._activeSourceName}-${i}`} className="hover:bg-gray-50">
                   <td className={getBodyCls('__active_source', "p-2 border whitespace-pre-wrap break-words font-bold text-purple-700 bg-purple-50/30")} style={getBodySty('__active_source', getColWidth('__active_source'))}>
                     <div className="flex items-center gap-1">
-                      {highlightText(row._activeSourceName, deferredSearchQuery)}
+                      {(() => {
+                        const render = row._activeSourceColor ? resolveChipRender(row._activeSourceColor) : null;
+                        return (
+                          <span 
+                            className={render ? `px-1.5 py-0.5 rounded border ${render.kind === 'class' ? render.className : ''}` : ""} 
+                            style={render?.kind === 'style' ? render.style : undefined}
+                          >
+                            {highlightText(row._activeSourceName, deferredSearchQuery)}
+                          </span>
+                        );
+                      })()}
                       {row._isLocked && <span className="text-[10px]">🔒</span>}
                       {showAllStatuses && row._isRetired && <span className="text-xs font-semibold text-red-700 bg-red-100 px-1.5 py-0.5 rounded-full whitespace-nowrap">(retired)</span>}
                     </div>
