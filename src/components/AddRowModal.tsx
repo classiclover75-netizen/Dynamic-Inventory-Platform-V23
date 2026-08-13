@@ -24,8 +24,7 @@ import { RetiredSourcesModal } from "./RetiredSourcesModal";
 import { ColorPickerPopover } from "./ColorPickerPopover";
 import { SourceColorChange, buildRowColorUpdates } from "../lib/sourceColorSync";
 import { resolveChipRender } from "../lib/colorRender";
-import { TAILWIND_FAMILIES } from "../lib/colorUtils";
-import { extractHue, generateRandomSourceColor } from "../lib/randomSourceColor";
+import { extractHue, generateRandomSourceColor, getNextAvailableFamily } from "../lib/randomSourceColor";
 
 const RichTextEditor = ({
   value,
@@ -1216,9 +1215,9 @@ export const AddRowModal = React.memo(
                                         const usedColors = currentSources.map((item: any) => item.color);
                                         let newColor = existingColor;
                                         if (!newColor) {
-                                          const availableFamily = TAILWIND_FAMILIES.find(f => !usedColors.includes(f.chipClass));
-                                          if (availableFamily) {
-                                            newColor = availableFamily.chipClass;
+                                          const availableFamilyClass = getNextAvailableFamily(usedColors);
+                                          if (availableFamilyClass) {
+                                            newColor = availableFamilyClass;
                                           } else {
                                             const usedHues = usedColors.map((c: string) => extractHue(c)).filter((h: number | null) => h !== null) as number[];
                                             newColor = generateRandomSourceColor(usedHues);

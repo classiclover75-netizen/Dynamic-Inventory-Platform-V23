@@ -1,5 +1,19 @@
-import { rgbToHex, rgbToHsl, parseHex, familyByChipClass, TAILWIND_FAMILIES } from "./colorUtils";
+import { rgbToHex, rgbToHsl, parseHex, familyByChipClass, familyByName, TAILWIND_FAMILIES } from "./colorUtils";
 import { parseCustomColor } from "./colorRender";
+
+export const ORDERED_FAMILIES = [
+  "blue", "orange", "green", "purple", "pink", "cyan", "amber", "rose", "teal", "indigo", "lime", "fuchsia", "sky", "red", "violet", "emerald", "yellow", "slate", "gray", "zinc"
+];
+
+export function getNextAvailableFamily(usedColors: string[]): string | null {
+  for (const name of ORDERED_FAMILIES) {
+    const family = familyByName(name);
+    if (family && !usedColors.includes(family.chipClass)) {
+      return family.chipClass;
+    }
+  }
+  return null;
+}
 
 function hslToRgb(h: number, s: number, l: number): [number, number, number] {
   s /= 100;
