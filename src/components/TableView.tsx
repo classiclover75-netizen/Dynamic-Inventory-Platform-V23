@@ -894,7 +894,7 @@ export const TableView = ({
                                                     className={`px-2 py-0.5 rounded text-[14px] font-bold border flex items-center gap-1 ${alert ? "bg-[#FF0000] text-white border-[#cc0000] shadow-md" : (render?.kind === 'class' ? render.className : '')} ${locked ? "opacity-50 grayscale" : ""}`}
                                                     style={render?.kind === 'style' ? render.style : undefined}
                                                   >
-                                                    <span className={`\${alert ? "text-white font-extrabold" : ""} flex items-center`}>
+                                                    <span className={`${alert ? "text-white font-extrabold" : ""} flex items-center`}>
                                                       {s.source}:{locked && <span className="ml-1 text-[10px]">🔒</span>}
                                                     </span>{" "}
                                                     <span>{s.remaining}</span>
