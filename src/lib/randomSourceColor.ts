@@ -76,8 +76,8 @@ export function generateRandomSourceColor(usedHues: number[]): string {
     }
   }
   
-  const saturation = 70;
-  const lightness = 85;
+  const saturation = 85;
+  const lightness = 52;
   
   const rgb = hslToRgb(bestHue, saturation, lightness);
   const hex = rgbToHex(rgb);
