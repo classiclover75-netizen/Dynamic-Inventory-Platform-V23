@@ -131,6 +131,12 @@ export const ColorPickerPopover = React.memo(function ColorPickerPopover({
     }
   }, [onCommit]);
 
+  const handleClose = useCallback(() => {
+    setShowDiscardWarning(false);
+    setIsOpen(false);
+    triggerRef.current?.focus();
+  }, []);
+
   const handleDiscard = useCallback(() => {
     if (onChange) {
       const parsed = parseColorToPickerValue(initialValueRef.current);
@@ -147,18 +153,18 @@ export const ColorPickerPopover = React.memo(function ColorPickerPopover({
 
   const handleRequestClose = useCallback(() => {
     if (!latestValueRef.current) {
-      handleDiscard();
+      handleClose();
       return;
     }
     
     const initialParsed = parseColorToPickerValue(initialValueRef.current);
-    if (!initialParsed || initialParsed.chipClass.toLowerCase() === latestValueRef.current.chipClass.toLowerCase()) {
-      handleDiscard();
+    if (initialParsed && initialParsed.chipClass.toLowerCase() === latestValueRef.current.chipClass.toLowerCase()) {
+      handleClose();
       return;
     }
     
     setShowDiscardWarning(true);
-  }, [handleDiscard]);
+  }, [handleDiscard, handleClose]);
 
   useEffect(() => {
     if (!isOpen) return;
