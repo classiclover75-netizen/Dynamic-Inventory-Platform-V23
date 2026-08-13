@@ -233,12 +233,35 @@ export const ColorPickerPopover = React.memo(function ColorPickerPopover({
             visibility: position ? "visible" : "hidden"
           }}
         >
-          <ColorPickerPanel
+                    <ColorPickerPanel
             key={String(openCount)}
             initialValue={value}
-                                    onChange={handleChange}
-            onRequestClose={close}
+            onChange={handleChange}
+            onRequestClose={handleRequestClose}
+            onConfirm={handleCommit}
           />
+          {showDiscardWarning && (
+            <div className="absolute inset-0 bg-white/95 backdrop-blur-sm z-[10] flex flex-col items-center justify-center p-4 text-center rounded-xl shadow-[0_0_15px_rgba(0,0,0,0.1)] border border-gray-100">
+              <p className="text-[13px] font-semibold text-gray-800 mb-1">Discard colour change?</p>
+              <p className="text-[12px] text-gray-500 mb-4 leading-tight">Closing will undo the colour you picked.</p>
+              <div className="flex gap-2 w-full">
+                <button
+                  type="button"
+                  onClick={handleDiscard}
+                  className="flex-1 px-3 py-1.5 rounded-lg border border-red-200 bg-red-50 text-red-600 text-[13px] font-semibold cursor-pointer hover:bg-red-100 transition-colors"
+                >
+                  Discard
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowDiscardWarning(false)}
+                  className="flex-1 px-3 py-1.5 rounded-lg border border-gray-200 bg-white text-gray-700 text-[13px] font-semibold cursor-pointer hover:bg-gray-50 transition-colors"
+                >
+                  Keep editing
+                </button>
+              </div>
+            </div>
+          )}
         </div>,
         document.body
       )}
