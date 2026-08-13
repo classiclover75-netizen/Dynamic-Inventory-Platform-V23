@@ -24,6 +24,8 @@ import { RetiredSourcesModal } from "./RetiredSourcesModal";
 import { ColorPickerPopover } from "./ColorPickerPopover";
 import { SourceColorChange, buildRowColorUpdates } from "../lib/sourceColorSync";
 import { resolveChipRender } from "../lib/colorRender";
+import { TAILWIND_FAMILIES } from "../lib/colorUtils";
+import { extractHue, generateRandomSourceColor } from "../lib/randomSourceColor";
 
 const RichTextEditor = ({
   value,
@@ -180,13 +182,6 @@ const parseMultiSource = (val: any) => {
     ];
   }
 };
-const RANDOM_COLORS = [
-  "bg-blue-100 text-blue-800 border-blue-200",
-  "bg-green-100 text-green-800 border-green-200",
-  "bg-orange-100 text-orange-800 border-orange-200",
-  "bg-purple-100 text-purple-800 border-purple-200",
-  "bg-pink-100 text-pink-800 border-pink-200",
-];
 
 export const AddRowModal = React.memo(
   ({
@@ -1082,6 +1077,7 @@ export const AddRowModal = React.memo(
                                             initialMode="palette"
                                             showModeToggle={true}
                                             hideSwatch={true}
+                                            forceIconVisible={true}
                                             label={src.source ? `Change colour for ${src.source}` : "Change colour for this source"}
                                             onChange={(val) => handleSourceColorChange(i, src.source, val.chipClass)}
                                             className="shrink-0"
@@ -1218,9 +1214,16 @@ export const AddRowModal = React.memo(
                                         }
 
                                         const usedColors = currentSources.map((item: any) => item.color);
-                                        const availableColors = RANDOM_COLORS.filter(c => !usedColors.includes(c));
-                                        const randomColor = availableColors.length > 0 ? availableColors[Math.floor(Math.random() * availableColors.length)] : RANDOM_COLORS[Math.floor(Math.random() * RANDOM_COLORS.length)];
-                                        const newColor = existingColor || randomColor;
+                                        let newColor = existingColor;
+                                        if (!newColor) {
+                                          const availableFamily = TAILWIND_FAMILIES.find(f => !usedColors.includes(f.chipClass));
+                                          if (availableFamily) {
+                                            newColor = availableFamily.chipClass;
+                                          } else {
+                                            const usedHues = usedColors.map((c: string) => extractHue(c)).filter((h: number | null) => h !== null) as number[];
+                                            newColor = generateRandomSourceColor(usedHues);
+                                          }
+                                        }
                                         
                                         const updated = [
                                           ...currentSources,
