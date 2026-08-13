@@ -7,7 +7,6 @@ import { CopyPopupNotification } from "./CopyPopupNotification";
 import { decodeHtmlEntities, parseMultiSource } from "../lib/appUtils";
 import { RowPositionEditor } from "./RowPositionEditor";
 import { sanitizeHtml } from "../lib/sanitizeHtml";
-import { formatSourceNumber } from "../lib/multiSourceHelpers";
 import { RetiredSourcePickerPopup } from "./RetiredSourcePickerPopup";
 import { getVisibleSaleSources, getCurrentSaleColumnKey } from '../lib/saleColumnSourceFilter';
 import { ArchivedSaleSourceAdder } from './ArchivedSaleSourceAdder';
@@ -828,7 +827,7 @@ export const TableView = ({
                                                   className={`w-full px-1.5 py-0.5 rounded text-[14px] font-bold border flex items-center justify-between gap-1 shadow-sm ${render.kind === 'class' ? render.className : ""}`}
                                                   style={render.kind === 'style' ? render.style : undefined}
                                                 >
-                                                  <span className="opacity-70 shrink-0 capitalize"><span className="mr-1">{formatSourceNumber(idx)}</span>{b.source}:</span>
+                                                  <span className="shrink-0 capitalize">{b.source}:</span>
                                                   <span className="flex-1 text-right">{b.qty}</span>
                                                 </div>
                                               );
@@ -895,8 +894,8 @@ export const TableView = ({
                                                     className={`px-2 py-0.5 rounded text-[14px] font-bold border flex items-center gap-1 ${alert ? "bg-[#FF0000] text-white border-[#cc0000] shadow-md" : (render?.kind === 'class' ? render.className : '')} ${locked ? "opacity-50 grayscale" : ""}`}
                                                     style={render?.kind === 'style' ? render.style : undefined}
                                                   >
-                                                    <span className={`${alert ? "text-white font-extrabold opacity-100" : "opacity-70"} flex items-center`}>
-                                                      <span className="mr-1">{formatSourceNumber(totalSources.findIndex((ts: any) => ts.source === s.source))}</span>{s.source}:{locked && <span className="ml-1 text-[10px]">🔒</span>}
+                                                    <span className={`\${alert ? "text-white font-extrabold" : ""} flex items-center`}>
+                                                      {s.source}:{locked && <span className="ml-1 text-[10px]">🔒</span>}
                                                     </span>{" "}
                                                     <span>{s.remaining}</span>
                                                   </div>
@@ -946,8 +945,8 @@ export const TableView = ({
                                                     style={render.kind === 'style' ? render.style : undefined}
                                                   >
                                                     <div className="flex items-center gap-1">
-                                                      <span className="opacity-70 flex items-center">
-                                                        <span className="mr-1">{formatSourceNumber(totalSources.findIndex((ts: any) => ts.source === s.source))}</span>{s.source}:{locked && <span className="ml-1 text-[13px]">🔒</span>}
+                                                      <span className="flex items-center">
+                                                        {s.source}:{locked && <span className="ml-1 text-[13px]">🔒</span>}
                                                       </span>{" "}
                                                       <span>{s.qty}</span>
                                                     </div>
@@ -985,8 +984,8 @@ export const TableView = ({
                                                     className={`px-2 py-0.5 rounded text-[14px] font-bold border flex items-center gap-1 ${render.kind === 'class' ? render.className : ""} cursor-pointer hover:opacity-80 transition-opacity`}
                                                     style={render.kind === 'style' ? render.style : undefined}
                                                   >
-                                                    <span className="opacity-70">
-                                                      <span className="mr-1">{formatSourceNumber(totalSources.findIndex((ts: any) => ts.source === s.source))}</span>{s.source}:
+                                                    <span>
+                                                      {s.source}:
                                                     </span>{" "}
                                                     <span>{s.qty}</span>
                                                     <span className="ml-auto text-xs font-semibold text-red-700 bg-red-100 px-1.5 py-0.5 rounded-full whitespace-nowrap">(retired)</span>
@@ -1076,9 +1075,9 @@ export const TableView = ({
                                                       style={render.kind === 'style' ? render.style : undefined}
                                                     >
                                                       <div className="flex items-center justify-between w-full">
-                                                        <div className="opacity-70 shrink-0 flex flex-col items-start justify-center">
+                                                        <div className="shrink-0 flex flex-col items-start justify-center">
                                                           <span className="flex items-center">
-                                                            <span className="mr-1">{formatSourceNumber(totalSourcesRaw.findIndex((raw_ts: any) => raw_ts.source === ts.source))}</span>{ts.source}:{locked && <span className="ml-1 text-[10px]">🔒</span>}
+                                                            {ts.source}:{locked && <span className="ml-1 text-[10px]">🔒</span>}
                                                           </span>
                                                           {isRetired(ts) && (
                                                             <span className="text-xs font-semibold text-red-700 bg-red-100 px-1.5 py-0.5 rounded-full whitespace-nowrap mt-0.5 self-start">(retired)</span>
