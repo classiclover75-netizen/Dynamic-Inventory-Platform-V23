@@ -25,6 +25,7 @@ import { ColorPickerPopover } from "./ColorPickerPopover";
 import { SourceColorChange, buildRowColorUpdates } from "../lib/sourceColorSync";
 import { resolveChipRender } from "../lib/colorRender";
 import { extractHue, generateRandomSourceColor, getNextAvailableFamily } from "../lib/randomSourceColor";
+import { getCreationTooltip } from "../lib/sourceTimestamp";
 
 const RichTextEditor = ({
   value,
@@ -1026,6 +1027,7 @@ export const AddRowModal = React.memo(
                                                           }
                                                         }}
                                                         className={`w-full box-border text-[14px] px-1.5 py-0.5 rounded font-bold border border-transparent hover:border-gray-300 outline-none transition-colors resize-none overflow-hidden break-words whitespace-normal ${render.kind === 'class' ? render.className : ''}`}
+                                                        title={getCreationTooltip(src)}
                                                         value={src.source}
                                                         rows={1}
                                                         style={{ fieldSizing: "content", minHeight: "28px", ...(render.kind === 'style' ? render.style : {}) } as any}
@@ -1232,6 +1234,7 @@ export const AddRowModal = React.memo(
                                               parseFloat(newSourceInput.qty) ||
                                               0,
                                             color: newColor,
+                                            createdAt: new Date().toISOString(),
                                           },
                                         ];
                                         handleUpdateField(
