@@ -24,7 +24,7 @@ import { RetiredSourcesModal } from "./RetiredSourcesModal";
 import { ColorPickerPopover } from "./ColorPickerPopover";
 import { SourceColorChange, buildRowColorUpdates } from "../lib/sourceColorSync";
 import { resolveChipRender } from "../lib/colorRender";
-import { extractHue, generateRandomSourceColor, getNextAvailableFamily } from "../lib/randomSourceColor";
+import { extractHue, generateRandomSourceColor, getNextAvailableHexColor } from "../lib/randomSourceColor";
 import { getCreationTooltip } from "../lib/sourceTimestamp";
 
 const RichTextEditor = ({
@@ -196,6 +196,7 @@ export const AddRowModal = React.memo(
     editingRowIndex,
     activePage,
     allRows,
+    allPagesRows,
     onToggleMagicPasteColumn,
     onApplySourceToAll,
     setConfirmationModal,
@@ -216,6 +217,7 @@ export const AddRowModal = React.memo(
     editingRowIndex?: number;
     activePage: string;
     allRows?: RowData[];
+    allPagesRows?: Record<string, RowData[]>;
     onToggleMagicPasteColumn?: (colKey: string) => void;
     onApplySourceToAll?: (page: string, col: string, name: string, color: string) => void;
     setConfirmationModal: (
@@ -1062,9 +1064,7 @@ export const AddRowModal = React.memo(
                                         <div className="flex items-center ml-auto shrink-0 gap-1">
                                           <ColorPickerPopover
                                             value={src.color}
-                                            initialMode="palette"
-                                            showModeToggle={true}
-                                            hideSwatch={true}
+                                                                                                                                    hideSwatch={true}
                                             forceIconVisible={true}
                                             label={src.source ? `Change colour for ${src.source}` : "Change colour for this source"}
                                             onChange={(val) => handleSourceColorChange(i, src.source, val.chipClass)}
@@ -1184,27 +1184,32 @@ export const AddRowModal = React.memo(
                                     onClick={() => {
                                       if (newSourceInput.source) {
                                         let existingColor = null;
-                                        if (allRows) {
-                                          for (const r of allRows) {
-                                            try {
-                                              const val = r[col.key]; // col.key is the active column being edited
-                                              if (!val) continue;
-                                              const arr = typeof val === 'string' ? JSON.parse(val) : val;
-                                              if (Array.isArray(arr)) {
-                                                const match = arr.find((item: any) => item.source?.trim().toLowerCase() === newSourceInput.source.trim().toLowerCase());
-                                                if (match && match.color) {
-                                                  existingColor = match.color;
-                                                  break;
+                                        const pagesToSearch = allPagesRows ? Object.values(allPagesRows) : (allRows ? [allRows] : []);
+                                        for (const rows of pagesToSearch) {
+                                          for (const r of rows) {
+                                            for (const fieldKey of Object.keys(r)) {
+                                              try {
+                                                const val = r[fieldKey];
+                                                if (!val) continue;
+                                                const arr = typeof val === 'string' ? JSON.parse(val) : val;
+                                                if (Array.isArray(arr)) {
+                                                  const match = arr.find((item: any) => item.source?.trim().toLowerCase() === newSourceInput.source.trim().toLowerCase());
+                                                  if (match && match.color) {
+                                                    existingColor = match.color;
+                                                    break;
+                                                  }
                                                 }
-                                              }
-                                            } catch(e) {} // ignore parsing errors for flat values
+                                              } catch (e) {}
+                                            }
+                                            if (existingColor) break;
                                           }
+                                          if (existingColor) break;
                                         }
 
                                         const usedColors = currentSources.map((item: any) => item.color);
                                         let newColor = existingColor;
                                         if (!newColor) {
-                                          const availableFamilyClass = getNextAvailableFamily(usedColors);
+                                          const availableFamilyClass = getNextAvailableHexColor(usedColors);
                                           if (availableFamilyClass) {
                                             newColor = availableFamilyClass;
                                           } else {

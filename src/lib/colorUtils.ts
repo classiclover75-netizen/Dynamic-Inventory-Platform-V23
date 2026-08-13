@@ -1,43 +1,5 @@
 export type Rgb = [number, number, number];
 
-export interface TailwindFamily {
-  name: string;
-  swatch: string;
-  chipClass: string;
-  bg: string;
-  text: string;
-  border: string;
-}
-
-export const TAILWIND_FAMILIES: TailwindFamily[] = [
-  { name: 'slate', swatch: '#64748b', chipClass: 'bg-slate-100 text-slate-800 border-slate-200', bg: '#f1f5f9', text: '#1e293b', border: '#e2e8f0' },
-  { name: 'gray', swatch: '#6b7280', chipClass: 'bg-gray-100 text-gray-800 border-gray-200', bg: '#f3f4f6', text: '#1f2937', border: '#e5e7eb' },
-  { name: 'zinc', swatch: '#71717a', chipClass: 'bg-zinc-100 text-zinc-800 border-zinc-200', bg: '#f4f4f5', text: '#27272a', border: '#e4e4e7' },
-  { name: 'red', swatch: '#ef4444', chipClass: 'bg-red-100 text-red-800 border-red-200', bg: '#fee2e2', text: '#991b1b', border: '#fecaca' },
-  { name: 'orange', swatch: '#f97316', chipClass: 'bg-orange-100 text-orange-800 border-orange-200', bg: '#ffedd5', text: '#9a3412', border: '#fed7aa' },
-  { name: 'amber', swatch: '#f59e0b', chipClass: 'bg-amber-100 text-amber-800 border-amber-200', bg: '#fef3c7', text: '#92400e', border: '#fde68a' },
-  { name: 'yellow', swatch: '#eab308', chipClass: 'bg-yellow-100 text-yellow-800 border-yellow-200', bg: '#fef9c3', text: '#854d0e', border: '#fef08a' },
-  { name: 'lime', swatch: '#84cc16', chipClass: 'bg-lime-100 text-lime-800 border-lime-200', bg: '#ecfccb', text: '#3f6212', border: '#d9f99d' },
-  { name: 'green', swatch: '#22c55e', chipClass: 'bg-green-100 text-green-800 border-green-200', bg: '#dcfce7', text: '#166534', border: '#bbf7d0' },
-  { name: 'emerald', swatch: '#10b981', chipClass: 'bg-emerald-100 text-emerald-800 border-emerald-200', bg: '#d1fae5', text: '#065f46', border: '#a7f3d0' },
-  { name: 'teal', swatch: '#14b8a6', chipClass: 'bg-teal-100 text-teal-800 border-teal-200', bg: '#ccfbf1', text: '#115e59', border: '#99f6e4' },
-  { name: 'cyan', swatch: '#06b6d4', chipClass: 'bg-cyan-100 text-cyan-800 border-cyan-200', bg: '#cffafe', text: '#155e75', border: '#a5f3fc' },
-  { name: 'sky', swatch: '#0ea5e9', chipClass: 'bg-sky-100 text-sky-800 border-sky-200', bg: '#e0f2fe', text: '#075985', border: '#bae6fd' },
-  { name: 'blue', swatch: '#3b82f6', chipClass: 'bg-blue-100 text-blue-800 border-blue-200', bg: '#dbeafe', text: '#1e40af', border: '#bfdbfe' },
-  { name: 'indigo', swatch: '#6366f1', chipClass: 'bg-indigo-100 text-indigo-800 border-indigo-200', bg: '#e0e7ff', text: '#3730a3', border: '#c7d2fe' },
-  { name: 'violet', swatch: '#8b5cf6', chipClass: 'bg-violet-100 text-violet-800 border-violet-200', bg: '#ede9fe', text: '#5b21b6', border: '#ddd6fe' },
-  { name: 'purple', swatch: '#a855f7', chipClass: 'bg-purple-100 text-purple-800 border-purple-200', bg: '#f3e8ff', text: '#6b21a8', border: '#e9d5ff' },
-  { name: 'fuchsia', swatch: '#d946ef', chipClass: 'bg-fuchsia-100 text-fuchsia-800 border-fuchsia-200', bg: '#fae8ff', text: '#86198f', border: '#f5d0fe' },
-  { name: 'pink', swatch: '#ec4899', chipClass: 'bg-pink-100 text-pink-800 border-pink-200', bg: '#fce7f3', text: '#9d174d', border: '#fbcfe8' },
-  { name: 'rose', swatch: '#f43f5e', chipClass: 'bg-rose-100 text-rose-800 border-rose-200', bg: '#ffe4e6', text: '#9f1239', border: '#fecdd3' }
-];
-
-export const FALLBACK_CHIP_CLASS = "bg-gray-100 text-gray-800 border-gray-200";
-
-export const DEFAULT_SAVED_COLORS = ["#EF4444", "#22C55E", "#3B82F6"];
-
-export const MAX_SAVED_COLORS = 20;
-
 export function isValidHex(val: unknown): val is string {
   if (typeof val !== 'string') return false;
   return /^#?([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$/.test(val.trim());
@@ -146,47 +108,6 @@ export function contrastRatio(rgb1: Rgb, rgb2: Rgb): number {
   return (max + 0.05) / (min + 0.05);
 }
 
-export function nearestFamily(rgb: Rgb): TailwindFamily {
-  let bestDistance = Infinity;
-  let bestFamily: TailwindFamily = TAILWIND_FAMILIES[0];
-  if (!Array.isArray(rgb) || rgb.length !== 3) return bestFamily;
-  for (const family of TAILWIND_FAMILIES) {
-    const familyRgb = parseHex(family.swatch);
-    if (!familyRgb) continue;
-    const rDiff = rgb[0] - familyRgb[0];
-    const gDiff = rgb[1] - familyRgb[1];
-    const bDiff = rgb[2] - familyRgb[2];
-    const distance = 2 * (rDiff * rDiff) + 4 * (gDiff * gDiff) + 3 * (bDiff * bDiff);
-    if (distance < bestDistance) {
-      bestDistance = distance;
-      bestFamily = family;
-    }
-  }
-  return bestFamily;
-}
-
-export function familyByName(name: string): TailwindFamily | null {
-  if (typeof name !== 'string') return null;
-  for (const family of TAILWIND_FAMILIES) {
-    if (family.name === name) return family;
-  }
-  return null;
-}
-
-export function familyByChipClass(chipClass: unknown): TailwindFamily | null {
-  if (typeof chipClass !== 'string') return null;
-  const trimmed = chipClass.trim();
-  if (!trimmed) return null;
-  for (const family of TAILWIND_FAMILIES) {
-    if (family.chipClass === trimmed) return family;
-  }
-  const tokens = trimmed.split(/\s+/);
-  for (const family of TAILWIND_FAMILIES) {
-    if (tokens.includes(`bg-${family.name}-100`)) return family;
-  }
-  return null;
-}
-
 export function formatRgba(rgb: Rgb, alpha: number = 1): string {
   if (!Array.isArray(rgb) || rgb.length !== 3) return "rgba(0, 0, 0, 1)";
   const a = Math.max(0, Math.min(1, alpha));
@@ -205,3 +126,6 @@ export function readableTextColor(rgb: Rgb): string {
   }
   return "#101828";
 }
+
+export const DEFAULT_SAVED_COLORS = ["#EF4444", "#22C55E", "#3B82F6"];
+export const MAX_SAVED_COLORS = 20;

@@ -1,15 +1,22 @@
-import { rgbToHex, rgbToHsl, parseHex, familyByChipClass, familyByName, TAILWIND_FAMILIES } from "./colorUtils";
-import { parseCustomColor } from "./colorRender";
+import { rgbToHex, rgbToHsl } from "./colorUtils";
+import { parseCustomColor, buildCustomColor, CUSTOM_PREFIX } from "./colorRender";
 
-export const ORDERED_FAMILIES = [
-  "blue", "orange", "green", "purple", "pink", "cyan", "amber", "rose", "teal", "indigo", "lime", "fuchsia", "sky", "red", "violet", "emerald", "yellow", "slate", "gray", "zinc"
+export const ORDERED_HEX_COLORS = [
+  "#3B82F6", "#F97316", "#22C55E", "#A855F7", "#EC4899", "#06B6D4", "#F59E0B", "#F43F5E", "#14B8A6", "#6366F1", "#84CC16", "#D946EF", "#0EA5E9", "#EF4444", "#8B5CF6", "#10B981", "#EAB308", "#64748B", "#6B7280", "#71717A"
 ];
 
-export function getNextAvailableFamily(usedColors: string[]): string | null {
-  for (const name of ORDERED_FAMILIES) {
-    const family = familyByName(name);
-    if (family && !usedColors.includes(family.chipClass)) {
-      return family.chipClass;
+export function getNextAvailableHexColor(usedColors: string[]): string | null {
+  for (const hex of ORDERED_HEX_COLORS) {
+    let used = false;
+    for (const c of usedColors) {
+      const parsed = parseCustomColor(c);
+      if (parsed && parsed.hex.toUpperCase() === hex.toUpperCase()) {
+        used = true;
+        break;
+      }
+    }
+    if (!used) {
+      return buildCustomColor(hex, 100);
     }
   }
   return null;
@@ -26,20 +33,11 @@ function hslToRgb(h: number, s: number, l: number): [number, number, number] {
 }
 
 export function extractHue(color: string): number | null {
-  if (color.startsWith("custom:")) {
+  if (color.startsWith(CUSTOM_PREFIX)) {
     const parsed = parseCustomColor(color);
     if (parsed) {
       const hsl = rgbToHsl(parsed.rgb);
       return hsl[0];
-    }
-  } else {
-    const family = familyByChipClass(color);
-    if (family) {
-      const parsed = parseHex(family.bg || family.swatch);
-      if (parsed) {
-        const hsl = rgbToHsl(parsed);
-        return hsl[0];
-      }
     }
   }
   return null;
@@ -48,7 +46,6 @@ export function extractHue(color: string): number | null {
 export function generateRandomSourceColor(usedHues: number[]): string {
   let bestHue = 0;
   let maxMinDiff = -1;
-
   for (let attempt = 0; attempt < 40; attempt++) {
     const hue = Math.floor(Math.random() * 360);
     

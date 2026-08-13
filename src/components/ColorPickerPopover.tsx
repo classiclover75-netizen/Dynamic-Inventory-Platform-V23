@@ -1,13 +1,12 @@
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { Palette } from "lucide-react";
-import { ColorPickerPanel, ColorPickerMode, ColorPickerValue } from "./ColorPickerPanel";
-import { familyByChipClass, parseHex } from "../lib/colorUtils";
+import { ColorPickerPanel, ColorPickerValue } from "./ColorPickerPanel";
+import { parseHex } from "../lib/colorUtils";
+import { CUSTOM_PREFIX, parseCustomColor } from "../lib/colorRender";
 
 interface ColorPickerPopoverProps {
   value?: string;
-  initialMode?: ColorPickerMode;
-  showModeToggle?: boolean;
   onChange?: (val: ColorPickerValue) => void;
   onCommit?: (val: ColorPickerValue) => void;
   disabled?: boolean;
@@ -42,17 +41,17 @@ function useCanHover() {
 
 function resolveSwatchColor(value?: string): string {
   if (!value) return "#E5E7EB";
+  if (value.startsWith(CUSTOM_PREFIX)) {
+    const parsed = parseCustomColor(value);
+    if (parsed) return parsed.hex;
+  }
   if (parseHex(value)) return value;
-  const family = familyByChipClass(value);
-  if (family) return family.swatch;
   return "#E5E7EB";
 }
 
 export const ColorPickerPopover = React.memo(function ColorPickerPopover({
   value,
-  initialMode = "palette",
-  showModeToggle = true,
-  onChange,
+      onChange,
   onCommit,
   disabled = false,
   label = "Change colour",
@@ -211,9 +210,7 @@ export const ColorPickerPopover = React.memo(function ColorPickerPopover({
           <ColorPickerPanel
             key={String(openCount)}
             initialValue={value}
-            initialMode={initialMode}
-            showModeToggle={showModeToggle}
-            onChange={handleChange}
+                                    onChange={handleChange}
             onRequestClose={close}
           />
         </div>,

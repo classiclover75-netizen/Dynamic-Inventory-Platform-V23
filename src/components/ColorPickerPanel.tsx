@@ -4,12 +4,9 @@ import {
   DEFAULT_SAVED_COLORS,
   MAX_SAVED_COLORS,
   Rgb,
-  TailwindFamily,
-  familyByChipClass,
   formatRgba,
   hsvToRgb,
   isValidHex,
-  nearestFamily,
   parseHex,
   rgbToHex,
   rgbToHsl,
@@ -17,23 +14,17 @@ import {
 } from "../lib/colorUtils";
 import { buildCustomColor } from "../lib/colorRender";
 
-export type ColorPickerMode = "palette" | "custom";
 
 export interface ColorPickerValue {
-  mode: ColorPickerMode;
   hex: string;
   alpha: number;
   rgb: Rgb;
-  family: TailwindFamily;
   chipClass: string;
 }
 
 interface ColorPickerPanelProps {
   initialValue?: string;
-  initialMode?: ColorPickerMode;
-  showModeToggle?: boolean;
   onChange?: (val: ColorPickerValue) => void;
-  onModeChange?: (mode: ColorPickerMode) => void;
   className?: string;
   onRequestClose?: () => void;
 }
@@ -68,19 +59,25 @@ function readSavedColors(): string[] {
 function resolveSeed(seed?: string): { h: number; s: number; v: number } {
   const fallback = { h: 217, s: 72, v: 60 };
   if (typeof seed !== 'string') return fallback;
+  
+  // Custom formatted color parsing
+  if (seed.startsWith("custom:")) {
+    const parts = seed.substring(7).split("@");
+    if (parts.length > 0) {
+      const hexRgb = parseHex(parts[0]);
+      if (hexRgb) {
+        const [h, s, v] = rgbToHsv(hexRgb);
+        return { h, s, v };
+      }
+    }
+  }
+
   const hexRgb = parseHex(seed);
   if (hexRgb) {
     const [h, s, v] = rgbToHsv(hexRgb);
     return { h, s, v };
   }
-  const family = familyByChipClass(seed);
-  if (family) {
-    const swatchRgb = parseHex(family.swatch);
-    if (swatchRgb) {
-      const [h, s, v] = rgbToHsv(swatchRgb);
-      return { h, s, v };
-    }
-  }
+  
   return fallback;
 }
 
@@ -115,23 +112,19 @@ function useDragTrack(onChange: (x: number, y: number) => void) {
 // The panel is uncontrolled after mount, remount with a changed key to reseed it
 export const ColorPickerPanel = React.memo(function ColorPickerPanel({
   initialValue,
-  initialMode = "palette",
-  showModeToggle = true,
   onChange,
-  onModeChange,
   className = "",
   onRequestClose
 }: ColorPickerPanelProps) {
   const initialSeed = useRef({
     hsv: resolveSeed(initialValue),
     alpha: 1,
-    mode: initialMode || "palette"
+    
   });
 
   const [hsv, setHsv] = useState(initialSeed.current.hsv);
   const [alpha, setAlpha] = useState(initialSeed.current.alpha);
-  const [mode, setMode] = useState<ColorPickerMode>(initialSeed.current.mode);
-  const [format, setFormat] = useState<"hex" | "rgb" | "hsl">("hex");
+    const [format, setFormat] = useState<"hex" | "rgb" | "hsl">("hex");
   const [savedColors, setSavedColors] = useState(() => readSavedColors());
   const [deleteMode, setDeleteMode] = useState(false);
 
@@ -148,8 +141,7 @@ export const ColorPickerPanel = React.memo(function ColorPickerPanel({
 
   const rgb = useMemo(() => hsvToRgb(hsv.h, hsv.s, hsv.v), [hsv]);
   const hex = useMemo(() => rgbToHex(rgb), [rgb]);
-  const family = useMemo(() => nearestFamily(rgb), [rgb]);
-  const cssColor = useMemo(() => formatRgba(rgb, alpha), [rgb, alpha]);
+    const cssColor = useMemo(() => formatRgba(rgb, alpha), [rgb, alpha]);
 
   const onChangeRef = useRef(onChange);
   onChangeRef.current = onChange;
@@ -162,15 +154,13 @@ export const ColorPickerPanel = React.memo(function ColorPickerPanel({
     }
     if (onChangeRef.current) {
       onChangeRef.current({
-        mode,
         hex,
         alpha,
         rgb,
-        family,
-        chipClass: mode === "palette" ? family.chipClass : buildCustomColor(hex, Math.round(alpha * 100))
+        chipClass: buildCustomColor(hex, Math.round(alpha * 100))
       });
     }
-  }, [mode, hex, alpha, rgb, family]);
+  }, [hex, alpha, rgb]);
 
   useEffect(() => {
     try {
@@ -297,11 +287,7 @@ export const ColorPickerPanel = React.memo(function ColorPickerPanel({
     setSavedColors(prev => prev.filter(c => c !== entry));
   }, []);
 
-  const handleSelectMode = useCallback((m: ColorPickerMode) => {
-    setMode(m);
-    if (onModeChange) onModeChange(m);
-  }, [onModeChange]);
-
+  
   const handleToggleDeleteMode = useCallback(() => {
     if (savedColors.length === 0) {
       setDeleteMode(false);
@@ -324,16 +310,14 @@ export const ColorPickerPanel = React.memo(function ColorPickerPanel({
       Math.abs(hsv.h - s.hsv.h) > eps ||
       Math.abs(hsv.s - s.hsv.s) > eps ||
       Math.abs(hsv.v - s.hsv.v) > eps ||
-      Math.abs(alpha - s.alpha) > eps ||
-      mode !== s.mode
+      Math.abs(alpha - s.alpha) > eps 
     );
-  }, [hsv, alpha, mode]);
+  }, [hsv, alpha]);
 
   const handleReset = useCallback(() => {
     const s = initialSeed.current;
     setHsv({ ...s.hsv });
     setAlpha(s.alpha);
-    setMode(s.mode);
     setValueDraft(null);
     setOpacityDraft(null);
   }, []);
@@ -370,24 +354,7 @@ export const ColorPickerPanel = React.memo(function ColorPickerPanel({
           </button>
         </div>
       )}
-      {showModeToggle && (
-        <div className="flex flex-row p-0.5 gap-0.5 bg-gray-100 border border-gray-200 rounded-lg">
-          {(["palette", "custom"] as ColorPickerMode[]).map((m) => {
-            const isActive = mode === m;
-            return (
-              <button
-                key={m}
-                type="button"
-                aria-pressed={isActive}
-                onClick={() => handleSelectMode(m)}
-                className={`flex-1 px-2 py-1.5 rounded-md text-[11px] font-bold cursor-pointer border-none transition-colors ${isActive ? "bg-white text-[#2b579a] shadow-sm" : "bg-transparent text-gray-500 hover:text-gray-700"}`}
-              >
-                {m === "palette" ? "Palette" : "Custom"}
-              </button>
-            );
-          })}
-        </div>
-      )}
+      
 
       <div
         role="application"
