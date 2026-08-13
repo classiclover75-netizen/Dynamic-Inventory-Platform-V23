@@ -22,10 +22,12 @@ export function ActiveSourcesOverviewModal({
   onSaveColWidths,
   initialSelectedSources = null,
   initialPinnedCols = [],
-  onSavePinnedCols
+  onSavePinnedCols,
+  onImageClick
 }: {
   initialPinnedCols?: string[];
   onSavePinnedCols?: (cols: string[]) => void;
+  onImageClick?: (rowId: string, imageKey: string) => void;
   isOpen: boolean;
   onClose: () => void;
   rows: any[];
@@ -565,19 +567,6 @@ export function ActiveSourcesOverviewModal({
                 Show Sale Columns
              </label>
            </div>
-           
-           <div className="relative flex-1 max-w-[400px]">
-             <Search
-               className="absolute left-2 top-2.5 text-gray-400"
-               size={16}
-             />
-             <Input
-               className="pl-8"
-               placeholder="Filter rows (e.g. source:A)..."
-               value={searchQuery}
-               onChange={(e) => setSearchQuery(e.target.value)}
-             />
-           </div>
            <Button
               variant="green"
               onClick={handleExport}
@@ -607,6 +596,19 @@ export function ActiveSourcesOverviewModal({
              <button onClick={() => setSortDir(d => d === 'asc' ? 'desc' : 'asc')} className="px-2 py-1 rounded hover:bg-gray-100 text-gray-600 font-medium border border-gray-200" title={sortDir === 'asc' ? 'Ascending' : 'Descending'}>
                {sortDir === 'asc' ? '↑' : '↓'}
              </button>
+           </div>        </div>
+        <div className="mb-4">
+           <div className="relative w-full">
+             <Search
+               className="absolute left-2 top-2.5 text-gray-400"
+               size={16}
+             />
+             <Input
+               className="pl-8 w-full"
+               placeholder="Filter rows (e.g. source:A)..."
+               value={searchQuery}
+               onChange={(e) => setSearchQuery(e.target.value)}
+             />
            </div>
         </div>
         <div className="flex-1 overflow-auto border rounded relative bg-white pr-4">
@@ -669,8 +671,13 @@ export function ActiveSourcesOverviewModal({
                         getImageUrl(rawVal) ? (
                           <img
                             src={getImageUrl(rawVal)}
-                            className="h-10 w-10 object-contain mx-auto rounded"
+                            className={`h-10 w-10 object-contain mx-auto rounded ${onImageClick ? 'cursor-pointer hover:opacity-80 transition-opacity' : ''}`}
                             alt="img"
+                            onClick={() => {
+                              if (onImageClick) {
+                                onImageClick(row._originalRowId, c.key);
+                              }
+                            }}
                             onError={(e) => {
                               (e.target as HTMLImageElement).style.display =
                                 "none";

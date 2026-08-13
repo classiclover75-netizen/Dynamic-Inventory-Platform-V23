@@ -2748,6 +2748,10 @@ function AppContent() {
         onSaveColWidths={(w) => handleSaveActivePageSettings({ ...activeConfig, retiredOverviewColWidths: w } as any, false)}
         initialPinnedCols={activeConfig?.retiredOverviewPinnedCols || []}
         onSavePinnedCols={(c) => handleSaveActivePageSettings({ ...activeConfig, retiredOverviewPinnedCols: c } as any, false)}
+        onImageClick={(rowId, imageKey) => {
+          setPreviewContext({ rowId, imageKey, pageName: state.activePage });
+          toggleModal("imagePreview", true);
+        }}
       />
       <ActiveSourcesOverviewModal
         pageName={state.activePage}
@@ -2762,6 +2766,10 @@ function AppContent() {
         onSaveColWidths={(w) => handleSaveActivePageSettings({ ...activeConfig, activeOverviewColWidths: w } as any, false)}
         initialPinnedCols={activeConfig?.activeOverviewPinnedCols || []}
         onSavePinnedCols={(c) => handleSaveActivePageSettings({ ...activeConfig, activeOverviewPinnedCols: c } as any, false)}
+        onImageClick={(rowId, imageKey) => {
+          setPreviewContext({ rowId, imageKey, pageName: state.activePage });
+          toggleModal("imagePreview", true);
+        }}
       />
 
       {/* ConfirmationModal is now global */}
