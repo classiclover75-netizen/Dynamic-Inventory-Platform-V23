@@ -2490,10 +2490,12 @@ function AppContent() {
         onApplySourceToAll={handleApplySourceToAll}
         onPropagateSourceColors={handlePropagateSourceColors}
         onBack={
-          returnToImagePreview
+          returnToImagePreview && previewContext?.rowId && previewContext?.imageKey
             ? () => {
-                closeAllModals();
-                toggleModal("imagePreview", true);
+                setModals((prev) => ({ ...prev, addRow: false, imagePreview: true }));
+                setEditingRowId(null);
+                setEditingPageName(null);
+                setReturnToImagePreview(false);
               }
             : returnToSettings
               ? () => {
@@ -2503,7 +2505,7 @@ function AppContent() {
               : undefined
         }
         backText={
-          returnToImagePreview
+          returnToImagePreview && previewContext?.rowId && previewContext?.imageKey
             ? "Back to Image Preview"
             : "Back to Active Page Settings"
         }

@@ -596,7 +596,8 @@ export function ActiveSourcesOverviewModal({
              <button onClick={() => setSortDir(d => d === 'asc' ? 'desc' : 'asc')} className="px-2 py-1 rounded hover:bg-gray-100 text-gray-600 font-medium border border-gray-200" title={sortDir === 'asc' ? 'Ascending' : 'Descending'}>
                {sortDir === 'asc' ? '↑' : '↓'}
              </button>
-           </div>        </div>
+           </div>
+        </div>
         <div className="mb-4">
            <div className="relative w-full">
              <Search
