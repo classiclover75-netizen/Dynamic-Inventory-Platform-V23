@@ -8,7 +8,3 @@ export const reorderSources = (list: any[], startIndex: number, endIndex: number
   result.splice(endIndex, 0, removed);
   return result;
 };
-
-export const sortSourcesAZ = (list: any[]) => {
-  return [...list].sort((a, b) => String(a.source || "").localeCompare(String(b.source || "")));
-};

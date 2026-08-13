@@ -16,8 +16,8 @@ import {
   Layers3,
 } from "lucide-react";
 import { DragDropContext, Droppable, Draggable, DropResult } from "@hello-pangea/dnd";
-import { reorderSources, formatSourceNumber, sortSourcesAZ } from "../lib/multiSourceHelpers";
-import { GripVertical, ArrowDownAZ } from "lucide-react";
+import { reorderSources, formatSourceNumber } from "../lib/multiSourceHelpers";
+import { GripVertical } from "lucide-react";
 import { RichDropdownSelect } from "./RichDropdownSelect";
 import { SourceAutocompleteInput, useSourceSuggestions } from "./SourceAutocompleteInput";
 import { RetiredSourcesModal } from "./RetiredSourcesModal";
@@ -940,19 +940,6 @@ export const AddRowModal = React.memo(
                                         🗄️ Retired ({retiredSources.length})
                                       </Button>
                                     )}
-                                    <Button
-                                      type="button"
-                                      variant="ghost"
-                                      size="sm"
-                                      className="h-6 px-2 text-xs text-purple-600 hover:text-purple-800 hover:bg-purple-100"
-                                      onClick={() => {
-                                        const sorted = sortSourcesAZ(activeSources);
-                                        handleUpdateField(i, col.key, JSON.stringify([...sorted, ...retiredSources]));
-                                      }}
-                                    >
-                                      <ArrowDownAZ className="w-3 h-3 mr-1" />
-                                      Sort A-Z
-                                    </Button>
                                   </div>
                                 </div>
                                 <DragDropContext
