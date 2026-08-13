@@ -2553,6 +2553,7 @@ function AppContent() {
           previewContext?.pageName || editingPageName || state.activePage
         }
         allRows={state.pageRows[previewContext?.pageName || editingPageName || state.activePage] || []}
+        allPagesRows={state.pageRows}
         isLiveTracker={!!rawActiveConfig.linkedSourcePage}
         onToggleMagicPasteColumn={handleToggleMagicPasteColumn}
         setConfirmationModal={setConfirmationModal}

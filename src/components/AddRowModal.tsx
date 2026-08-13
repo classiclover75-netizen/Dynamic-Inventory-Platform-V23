@@ -1064,7 +1064,7 @@ export const AddRowModal = React.memo(
                                         <div className="flex items-center ml-auto shrink-0 gap-1">
                                           <ColorPickerPopover
                                             value={src.color}
-                                                                                                                                    hideSwatch={true}
+                                            hideSwatch={true}
                                             forceIconVisible={true}
                                             label={src.source ? `Change colour for ${src.source}` : "Change colour for this source"}
                                             onChange={(val) => handleSourceColorChange(i, src.source, val.chipClass)}
