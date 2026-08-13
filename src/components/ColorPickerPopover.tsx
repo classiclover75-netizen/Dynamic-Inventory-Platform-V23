@@ -3,7 +3,7 @@ import { createPortal } from "react-dom";
 import { Palette } from "lucide-react";
 import { ColorPickerPanel, ColorPickerValue } from "./ColorPickerPanel";
 import { parseHex } from "../lib/colorUtils";
-import { CUSTOM_PREFIX, parseCustomColor } from "../lib/colorRender";
+import { CUSTOM_PREFIX, parseCustomColor, parseColorToPickerValue } from "../lib/colorRender";
 
 interface ColorPickerPopoverProps {
   value?: string;
@@ -69,6 +69,8 @@ export const ColorPickerPopover = React.memo(function ColorPickerPopover({
   const panelRef = useRef<HTMLDivElement>(null);
   const latestValueRef = useRef<ColorPickerValue | null>(null);
   const wasOpen = useRef(false);
+  const initialValueRef = useRef<string | undefined>(undefined);
+  const [showDiscardWarning, setShowDiscardWarning] = useState(false);
 
   useEffect(() => {
     if (isOpen && !wasOpen.current) {
@@ -120,35 +122,57 @@ export const ColorPickerPopover = React.memo(function ColorPickerPopover({
     };
   }, [isOpen, updatePosition]);
 
-  const close = useCallback(() => {
+  const handleCommit = useCallback(() => {
     setIsOpen(false);
+    setShowDiscardWarning(false);
+    triggerRef.current?.focus();
     if (latestValueRef.current && onCommit) {
       onCommit(latestValueRef.current);
     }
   }, [onCommit]);
 
+  const handleDiscard = useCallback(() => {
+    if (onChange) {
+      const parsed = parseColorToPickerValue(initialValueRef.current);
+      if (parsed) {
+        onChange(parsed);
+      } else if (initialValueRef.current !== undefined) {
+        onChange({ chipClass: initialValueRef.current } as ColorPickerValue);
+      }
+    }
+    setShowDiscardWarning(false);
+    setIsOpen(false);
+    triggerRef.current?.focus();
+  }, [onChange]);
+
+  const handleRequestClose = useCallback(() => {
+    if (!latestValueRef.current) {
+      handleDiscard();
+      return;
+    }
+    
+    const initialParsed = parseColorToPickerValue(initialValueRef.current);
+    if (!initialParsed || initialParsed.chipClass.toLowerCase() === latestValueRef.current.chipClass.toLowerCase()) {
+      handleDiscard();
+      return;
+    }
+    
+    setShowDiscardWarning(true);
+  }, [handleDiscard]);
+
   useEffect(() => {
     if (!isOpen) return;
-    const onMouseDown = (e: MouseEvent) => {
-      const target = e.target as Node;
-      if (panelRef.current && panelRef.current.contains(target)) return;
-      if (triggerRef.current && triggerRef.current.contains(target)) return;
-      close();
-    };
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         e.stopPropagation();
-        close();
-        triggerRef.current?.focus();
+        handleRequestClose();
       }
     };
-    document.addEventListener("mousedown", onMouseDown);
     document.addEventListener("keydown", onKeyDown, { capture: true });
     return () => {
-      document.removeEventListener("mousedown", onMouseDown);
       document.removeEventListener("keydown", onKeyDown, { capture: true });
     };
-  }, [isOpen, close]);
+  }, [isOpen, handleRequestClose]);
 
   const handleChange = useCallback((val: ColorPickerValue) => {
     latestValueRef.current = val;
@@ -178,9 +202,11 @@ export const ColorPickerPopover = React.memo(function ColorPickerPopover({
         onClick={() => {
           if (disabled) return;
           if (isOpen) {
-            close();
+            handleRequestClose();
           } else {
+            initialValueRef.current = value;
             latestValueRef.current = null;
+            setShowDiscardWarning(false);
             setIsOpen(true);
           }
         }}

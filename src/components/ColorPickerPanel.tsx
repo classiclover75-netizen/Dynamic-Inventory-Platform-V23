@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Pipette, Plus, Trash2, RotateCcw, X } from "lucide-react";
+import { Pipette, Plus, Trash2, X } from "lucide-react";
 import {
   DEFAULT_SAVED_COLORS,
   MAX_SAVED_COLORS,
@@ -27,6 +27,7 @@ interface ColorPickerPanelProps {
   onChange?: (val: ColorPickerValue) => void;
   className?: string;
   onRequestClose?: () => void;
+  onConfirm?: () => void;
 }
 
 const SAVED_COLORS_STORAGE_KEY = "inventory_saved_colors";
@@ -114,7 +115,8 @@ export const ColorPickerPanel = React.memo(function ColorPickerPanel({
   initialValue,
   onChange,
   className = "",
-  onRequestClose
+  onRequestClose,
+  onConfirm
 }: ColorPickerPanelProps) {
   const initialSeed = useRef({
     hsv: resolveSeed(initialValue),
@@ -303,25 +305,6 @@ export const ColorPickerPanel = React.memo(function ColorPickerPanel({
     }
   }, [deleteMode]);
 
-  const canReset = useMemo(() => {
-    const s = initialSeed.current;
-    const eps = 0.01;
-    return (
-      Math.abs(hsv.h - s.hsv.h) > eps ||
-      Math.abs(hsv.s - s.hsv.s) > eps ||
-      Math.abs(hsv.v - s.hsv.v) > eps ||
-      Math.abs(alpha - s.alpha) > eps 
-    );
-  }, [hsv, alpha]);
-
-  const handleReset = useCallback(() => {
-    const s = initialSeed.current;
-    setHsv({ ...s.hsv });
-    setAlpha(s.alpha);
-    setValueDraft(null);
-    setOpacityDraft(null);
-  }, []);
-
   const addDisabled = savedIsFull || alreadySaved;
   const addTitle = savedIsFull
     ? `Saved colours are full (${MAX_SAVED_COLORS} max). Remove one to add another.`
@@ -474,13 +457,12 @@ export const ColorPickerPanel = React.memo(function ColorPickerPanel({
           <span className="text-[13px] font-semibold text-gray-700">Saved</span>
           <button
             type="button"
-            onClick={handleReset}
-            disabled={!canReset}
-            title="Reset to original colour"
-            aria-label="Reset to original colour"
-            className="inline-flex items-center gap-1 px-2 py-1 rounded-md border-none bg-transparent text-[13px] font-semibold text-gray-900 cursor-pointer transition-colors hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-gray-900"
+            onClick={onConfirm}
+            title="Update colour"
+            aria-label="Update colour"
+            className="inline-flex items-center gap-1 px-2 py-1 rounded-md border-none bg-blue-50 text-[13px] font-semibold text-blue-700 cursor-pointer transition-colors hover:bg-blue-100"
           >
-            <RotateCcw size={14} /> Reset
+            Update
           </button>
         </div>
         <div className="inline-flex items-center gap-1 -mx-2 -my-1">

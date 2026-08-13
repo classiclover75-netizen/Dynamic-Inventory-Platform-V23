@@ -109,3 +109,29 @@ export function resolveBorderAccent(color: unknown): string {
   
   return "#94a3b8";
 }
+
+export function parseColorToPickerValue(value: string | undefined): { hex: string; alpha: number; rgb: Rgb; chipClass: string } | null {
+  if (!value) return null;
+  if (isCustomColor(value)) {
+    const parsed = parseCustomColor(value);
+    if (parsed) {
+      return {
+        hex: parsed.hex,
+        alpha: parsed.alpha,
+        rgb: parsed.rgb,
+        chipClass: buildCustomColor(parsed.hex, parsed.opacity)
+      };
+    }
+  }
+  const rgb = parseHex(value);
+  if (rgb) {
+    const hex = rgbToHex(rgb);
+    return {
+      hex,
+      alpha: 1,
+      rgb,
+      chipClass: buildCustomColor(hex, 100)
+    };
+  }
+  return null;
+}
