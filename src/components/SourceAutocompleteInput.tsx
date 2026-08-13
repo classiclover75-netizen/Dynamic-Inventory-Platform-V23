@@ -3,6 +3,7 @@ import { Input } from "./ui";
 import { parseMultiSource } from "../lib/appUtils";
 import { RowData } from "../types";
 import { formatSourceNumber } from "../lib/multiSourceHelpers";
+import { resolveChipRender } from "../lib/colorRender";
 
 export interface SourceSuggestion {
   source: string;
@@ -191,19 +192,23 @@ export const SourceAutocompleteInput: React.FC<SourceAutocompleteInputProps> = (
             maxHeight: `${maxHeight}px`
           }}
         >
-          {filtered.map((s, idx) => (
-            <div
-              key={idx}
-              className={`px-2 py-0.5 rounded text-[14px] font-bold border flex items-center justify-center cursor-pointer transition-opacity hover:opacity-80 ${s.color || "bg-gray-100 text-gray-800 border-gray-200"}`}
-              onMouseDown={(e) => {
-                e.preventDefault();
-                onChange(s.source);
-                setShowSuggestions(false);
-              }}
-            >
-              <span className="mr-1">{formatSourceNumber(idx)}</span>{s.source}
-            </div>
-          ))}
+          {filtered.map((s, idx) => {
+            const render = resolveChipRender(s.color);
+            return (
+              <div
+                key={idx}
+                className={`px-2 py-0.5 rounded text-[14px] font-bold border flex items-center justify-center cursor-pointer transition-opacity hover:opacity-80 ${render.kind === 'class' ? render.className : ""}`}
+                style={render.kind === 'style' ? render.style : undefined}
+                onMouseDown={(e) => {
+                  e.preventDefault();
+                  onChange(s.source);
+                  setShowSuggestions(false);
+                }}
+              >
+                <span className="mr-1">{formatSourceNumber(idx)}</span>{s.source}
+              </div>
+            );
+          })}
         </div>
       )}
     </div>

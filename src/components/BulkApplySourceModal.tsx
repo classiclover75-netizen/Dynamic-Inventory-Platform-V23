@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useEffect, useDeferredValue } from "react";
 import { formatCellDisplay } from '../lib/formatCellDisplay';
+import { resolveChipRender } from "../lib/colorRender";
 import { Search, ArrowLeft } from "lucide-react";
 import { Modal, Button } from "./ui";
 
@@ -256,9 +257,10 @@ export const BulkApplySourceModal: React.FC<BulkApplySourceModalProps> = ({
                   }}
                   className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all border flex items-center gap-1.5 ${
                     isSelected
-                      ? `shadow-md transform scale-105 ${s.color}`
+                      ? `shadow-md transform scale-105 ${resolveChipRender(s.color).kind === 'class' ? (resolveChipRender(s.color) as any).className : ''}`
                       : "bg-white text-gray-500 border-gray-200 hover:border-blue-300"
                   }`}
+                  style={isSelected && resolveChipRender(s.color).kind === 'style' ? (resolveChipRender(s.color) as any).style : undefined}
                 >
                   <input
                     type="checkbox"
@@ -377,11 +379,18 @@ export const BulkApplySourceModal: React.FC<BulkApplySourceModalProps> = ({
                           <td key={c.key} className="p-2 border whitespace-pre-wrap break-words min-w-[150px]">
                             <div className="flex flex-wrap gap-1">
                                {currentSources.length > 0 ? (
-                                  currentSources.map((src: any, sIdx: number) => (
-                                     <span key={sIdx} className={`px-1.5 py-0.5 rounded text-[12px] font-bold ${src.color}`}>
-                                        {src.source}: {src.qty}
-                                     </span>
-                                  ))
+                                  currentSources.map((src: any, sIdx: number) => {
+                                     const render = resolveChipRender(src.color);
+                                     return (
+                                       <span 
+                                         key={sIdx} 
+                                         className={`px-1.5 py-0.5 rounded text-[12px] font-bold ${render.kind === 'class' ? render.className : ''}`}
+                                         style={render.kind === 'style' ? render.style : undefined}
+                                       >
+                                          {src.source}: {src.qty}
+                                       </span>
+                                     );
+                                  })
                                ) : (
                                   <span className="text-gray-400 italic text-xs">No sources</span>
                                )}

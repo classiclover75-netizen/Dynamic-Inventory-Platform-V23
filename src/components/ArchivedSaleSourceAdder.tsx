@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { Plus, Search } from 'lucide-react';
 import { isLocked } from '../lib/sourceLockUtils';
+import { resolveBorderAccent } from '../lib/colorRender';
 import { Input } from './ui';
 
 interface ArchivedSaleSourceAdderProps {
@@ -93,7 +94,7 @@ export function ArchivedSaleSourceAdder({ hiddenSources, onSelect, onOpenChange 
                   }}
                   className="w-full flex items-center text-left px-3 py-1.5 text-sm hover:bg-blue-50 text-gray-700 truncate"
                 >
-                  <span className={`inline-block shrink-0 w-2 h-2 rounded-full mr-2 ${ts.color?.replace('bg-', 'bg-').replace('text-', 'text-') || 'bg-gray-400'}`}></span>
+                  <span className="inline-block shrink-0 w-2 h-2 rounded-full mr-2" style={{ backgroundColor: resolveBorderAccent(ts.color) }}></span>
                   {isLocked(ts) && <span className="mr-1 text-[10px]">🔒</span>}
                   <span className="truncate">{ts.source}</span>
                 </button>
