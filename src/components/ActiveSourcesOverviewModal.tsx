@@ -482,7 +482,7 @@ export function ActiveSourcesOverviewModal({
             ))}
           </div>
         )}
-                <div className="flex justify-end mb-2 shrink-0">
+        <div className="flex justify-end mb-2 shrink-0">
            <Button
               variant="green"
               onClick={handleExport}
@@ -492,7 +492,7 @@ export function ActiveSourcesOverviewModal({
               <FileSpreadsheet size={16} /> {isExporting ? "Exporting..." : "Export to Excel"}
            </Button>
         </div>
-<div className="flex gap-4 mb-4 shrink-0 items-center justify-between">
+        <div className="flex gap-4 mb-4 shrink-0 items-center justify-between">
            <div className="flex gap-4 items-center">
              <div className="relative" ref={sourceDropdownRef}>
                <Button
@@ -607,7 +607,7 @@ export function ActiveSourcesOverviewModal({
                size={16}
              />
              <Input
-               className="pl-8 w-full border-0 focus:border-transparent focus:ring-0 shadow-none !border-0 focus:!border-transparent focus:!ring-0 outline-none"
+               className="pl-8 w-full !border-0 focus:!border-transparent"
                placeholder="Filter rows (e.g. source:A)..."
                value={searchQuery}
                onChange={(e) => setSearchQuery(e.target.value)}
