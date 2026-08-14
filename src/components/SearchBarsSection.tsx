@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Input } from "./ui";
 import { X, Plus, Undo2, Redo2, History } from "lucide-react";
+import { buildRowCountSummary } from "../lib/rowCountSummary";
 
 export const SearchBarsSection = ({
   activePage,
@@ -15,6 +16,9 @@ export const SearchBarsSection = ({
   secondarySearchTags,
   setSecondarySearchTags,
   maxSearchHistory,
+  visibleRowCount,
+  totalRowCount,
+  isSearchActive,
 }: any) => {
 
   const primaryInputRef = useRef<HTMLInputElement>(null);
@@ -518,6 +522,23 @@ export const SearchBarsSection = ({
             }
             return null;
           },
+        )}
+        {visibleRowCount !== undefined && totalRowCount !== undefined && (
+          (() => {
+            const summary = buildRowCountSummary(visibleRowCount, totalRowCount, !!isSearchActive);
+            const toneClasses = {
+              idle: "bg-gray-100 text-gray-500 border-gray-300",
+              active: "bg-[#eaf3ed] text-[#217346] border-[#217346]",
+              empty: "bg-red-50 text-red-800 border-red-300",
+            };
+            return (
+              <div
+                className={`rounded-full text-xs font-bold px-3 py-1 flex items-center justify-center shrink-0 self-center border ${toneClasses[summary.tone]}`}
+              >
+                {summary.text}
+              </div>
+            );
+          })()
         )}
       </div>
   );

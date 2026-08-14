@@ -2423,6 +2423,9 @@ function AppContent() {
         secondarySearchTags={secondarySearchTags}
         setSecondarySearchTags={setSecondarySearchTags}
         maxSearchHistory={maxSearchHistory}
+        visibleRowCount={displayRows.length}
+        totalRowCount={isSecondaryActive ? (state.pageRows[activeConfig.secondarySearchPage!] || []).length : activeRowsWithSum.length}
+        isSearchActive={isSecondaryActive ? secondaryQueries.length > 0 : primaryQueries.length > 0}
       />
       <StorageModeBanner />
       <TrackerLinkStatusBanner health={trackerLinkHealth} />
