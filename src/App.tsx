@@ -30,6 +30,7 @@ import {
   DropResult,
 } from "@hello-pangea/dnd";
 import { Button, Input } from "./components/ui";
+import { ModalStackProvider } from './lib/modalStack';
 import { ToastProvider, useToast } from "./components/ToastProvider";
 import { CopyPopupNotification } from "./components/CopyPopupNotification";
 import { CreatePageModal } from "./components/CreatePageModal";
@@ -3973,7 +3974,9 @@ function AppContent() {
 export default function App() {
   return (
     <ToastProvider>
-      <AppContent />
+      <ModalStackProvider>
+        <AppContent />
+      </ModalStackProvider>
     </ToastProvider>
   );
 }

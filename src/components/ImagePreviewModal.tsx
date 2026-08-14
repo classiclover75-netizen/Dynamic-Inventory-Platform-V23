@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useModalLayer } from '../lib/modalStack';
 import { Button, Input } from './ui';
 import { Column, RowData } from '../types';
 import { useToast } from './ToastProvider';
@@ -52,6 +53,7 @@ export const ImagePreviewModal = React.memo(({
   const { toast } = useToast();
 
   // Zoom and Pan State
+  const zIndexVal = useModalLayer(isOpen);
   const [scale, setScale] = useState(1);
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
@@ -307,7 +309,7 @@ export const ImagePreviewModal = React.memo(({
   const handleMouseUp = () => setIsDragging(false);
 
   return (
-    <div className="fixed inset-0 bg-black/45 flex items-center justify-center p-3.5 z-50">
+    <div className="fixed inset-0 bg-black/45 flex items-center justify-center p-3.5" style={{ zIndex: zIndexVal }}>
       <div 
         className="bg-white rounded-lg border border-[#cfd8dc] flex flex-col lg:flex-row w-[95vw] max-w-[1200px] h-[90vh] overflow-hidden shadow-xl"
         onClick={(e) => e.stopPropagation()}

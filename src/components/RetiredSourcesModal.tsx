@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { useModalLayer } from '../lib/modalStack';
 import { Button, Input } from './ui';
 import { X, ArchiveRestore, Search } from 'lucide-react';
 import { MultiSourceItem } from '../lib/sourceArchiveUtils';
@@ -16,6 +17,7 @@ export const RetiredSourcesModal: React.FC<RetiredSourcesModalProps> = ({
   sources,
   onUnretire
 }) => {
+  const zIndexVal = useModalLayer(isOpen);
   const [search, setSearch] = useState('');
 
   const filteredSources = useMemo(() => {
@@ -27,7 +29,7 @@ export const RetiredSourcesModal: React.FC<RetiredSourcesModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/45 flex items-center justify-center p-3.5 z-[60]">
+    <div className="fixed inset-0 bg-black/45 flex items-center justify-center p-3.5" style={{ zIndex: zIndexVal }}>
       <div 
         className="bg-white rounded-lg border border-[#cfd8dc] p-3.5 max-h-[90vh] overflow-hidden flex flex-col shadow-xl"
         style={{ width: 'min(500px, 95vw)' }}
