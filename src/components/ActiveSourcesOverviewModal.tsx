@@ -577,27 +577,27 @@ export function ActiveSourcesOverviewModal({
                 <FileSpreadsheet size={16} /> {isExporting ? "Exporting..." : "Export to Excel"}
              </Button>
              <div className="flex items-center gap-2 text-sm bg-white p-1 rounded border shadow-sm">
-             <label className="flex items-center gap-1 cursor-pointer px-2 py-1 hover:bg-gray-50 rounded select-none">
-               <input type="checkbox" checked={showAllStatuses} onChange={e => setShowAllStatuses(e.target.checked)} className="rounded text-blue-600 focus:ring-blue-500" />
-               Show All Statuses
-             </label>
-             <div className="w-px h-4 bg-gray-300 mx-1"></div>
-             <select value={sortBy} onChange={e => {
-               const val = e.target.value;
-               setSortBy(val);
-               if (val === 'Status') setSortDir('asc');
-             }} className="border-none bg-transparent outline-none cursor-pointer py-1 pl-2 font-medium text-gray-700">
-                              <option value="Recently Added">Recently Added</option>
-               {showAllStatuses && <option value="Status">Status (Active/Retired)</option>}
-               <option value="Total Sale">Total Sale</option>
-               <option value="Total Qty">Total Qty</option>
-               <option value="Remaining Qty">Remaining Qty</option>
-               {saleCols.map((c: any) => <option key={c.key} value={c.name}>{c.name}</option>)}
-             </select>
-             <button onClick={() => setSortDir(d => d === 'asc' ? 'desc' : 'asc')} className="px-2 py-1 rounded hover:bg-gray-100 text-gray-600 font-medium border border-gray-200" title={sortDir === 'asc' ? 'Ascending' : 'Descending'}>
-               {sortDir === 'asc' ? '↑' : '↓'}
-             </button>
-           </div>
+               <label className="flex items-center gap-1 cursor-pointer px-2 py-1 hover:bg-gray-50 rounded select-none">
+                 <input type="checkbox" checked={showAllStatuses} onChange={e => setShowAllStatuses(e.target.checked)} className="rounded text-blue-600 focus:ring-blue-500" />
+                 Show All Statuses
+               </label>
+               <div className="w-px h-4 bg-gray-300 mx-1"></div>
+               <select value={sortBy} onChange={e => {
+                 const val = e.target.value;
+                 setSortBy(val);
+                 if (val === 'Status') setSortDir('asc');
+               }} className="border-none bg-transparent outline-none cursor-pointer py-1 pl-2 font-medium text-gray-700">
+                 <option value="Recently Added">Recently Added</option>
+                 {showAllStatuses && <option value="Status">Status (Active/Retired)</option>}
+                 <option value="Total Sale">Total Sale</option>
+                 <option value="Total Qty">Total Qty</option>
+                 <option value="Remaining Qty">Remaining Qty</option>
+                 {saleCols.map((c: any) => <option key={c.key} value={c.name}>{c.name}</option>)}
+               </select>
+               <button onClick={() => setSortDir(d => d === 'asc' ? 'desc' : 'asc')} className="px-2 py-1 rounded hover:bg-gray-100 text-gray-600 font-medium border border-gray-200" title={sortDir === 'asc' ? 'Ascending' : 'Descending'}>
+                 {sortDir === 'asc' ? '↑' : '↓'}
+               </button>
+             </div>
            </div>
         </div>
         <div className="mb-2">
