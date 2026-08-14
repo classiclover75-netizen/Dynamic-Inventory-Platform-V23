@@ -482,17 +482,7 @@ export function ActiveSourcesOverviewModal({
             ))}
           </div>
         )}
-        <div className="flex justify-end mb-2 shrink-0">
-           <Button
-              variant="green"
-              onClick={handleExport}
-              disabled={isExporting || filteredRows.length === 0}
-              className="flex items-center gap-2 shrink-0"
-           >
-              <FileSpreadsheet size={16} /> {isExporting ? "Exporting..." : "Export to Excel"}
-           </Button>
-        </div>
-        <div className="flex gap-4 mb-4 shrink-0 items-center justify-between">
+        <div className="flex gap-4 mb-2 shrink-0 items-center justify-between">
            <div className="flex gap-4 items-center">
              <div className="relative" ref={sourceDropdownRef}>
                <Button
@@ -577,7 +567,16 @@ export function ActiveSourcesOverviewModal({
                 Show Sale Columns
              </label>
            </div>
-           <div className="flex items-center gap-2 text-sm bg-white p-1 rounded border shadow-sm">
+           <div className="flex items-center gap-2 shrink-0">
+             <Button
+                variant="green"
+                onClick={handleExport}
+                disabled={isExporting || filteredRows.length === 0}
+                className="flex items-center gap-2 shrink-0"
+             >
+                <FileSpreadsheet size={16} /> {isExporting ? "Exporting..." : "Export to Excel"}
+             </Button>
+             <div className="flex items-center gap-2 text-sm bg-white p-1 rounded border shadow-sm">
              <label className="flex items-center gap-1 cursor-pointer px-2 py-1 hover:bg-gray-50 rounded select-none">
                <input type="checkbox" checked={showAllStatuses} onChange={e => setShowAllStatuses(e.target.checked)} className="rounded text-blue-600 focus:ring-blue-500" />
                Show All Statuses
@@ -599,8 +598,9 @@ export function ActiveSourcesOverviewModal({
                {sortDir === 'asc' ? '↑' : '↓'}
              </button>
            </div>
+           </div>
         </div>
-        <div className="mb-4">
+        <div className="mb-2">
            <div className="relative w-full border-[2px] border-[#217346] rounded bg-white">
              <Search
                className="absolute left-2 top-2.5 text-gray-400"
