@@ -550,6 +550,7 @@ function AppContent() {
     rowId: string;
     imageKey: string;
     pageName: string;
+    disableActions?: boolean;
   } | null>(null);
   const [returnToSettings, setReturnToSettings] = useState(false);
   const [returnToImagePreview, setReturnToImagePreview] = useState(false);
@@ -2755,7 +2756,7 @@ function AppContent() {
         initialPinnedCols={activeConfig?.retiredOverviewPinnedCols || []}
         onSavePinnedCols={(c) => handleSaveActivePageSettings({ ...activeConfig, retiredOverviewPinnedCols: c } as any, false)}
         onImageClick={(rowId, imageKey) => {
-          setPreviewContext({ rowId, imageKey, pageName: state.activePage });
+          setPreviewContext({ rowId, imageKey, pageName: state.activePage, disableActions: true });
           toggleModal("imagePreview", true);
         }}
       />
@@ -2773,7 +2774,7 @@ function AppContent() {
         initialPinnedCols={activeConfig?.activeOverviewPinnedCols || []}
         onSavePinnedCols={(c) => handleSaveActivePageSettings({ ...activeConfig, activeOverviewPinnedCols: c } as any, false)}
         onImageClick={(rowId, imageKey) => {
-          setPreviewContext({ rowId, imageKey, pageName: state.activePage });
+          setPreviewContext({ rowId, imageKey, pageName: state.activePage, disableActions: true });
           toggleModal("imagePreview", true);
         }}
       />
@@ -2807,6 +2808,7 @@ function AppContent() {
       <ImagePreviewModal
         isOpen={modals.imagePreview}
         onClose={closeAllModals}
+        actionsDisabled={previewContext?.disableActions === true}
         row={
           previewContext
             ? (state.pageRows[previewContext.pageName] || []).find(

@@ -26,7 +26,8 @@ export const ImagePreviewModal = React.memo(({
   setActiveAnchor,
   pageName,
   onCopy,
-  getImageUrl
+  getImageUrl,
+  actionsDisabled = false
 }: {
   isOpen: boolean;
   onClose: () => void;
@@ -45,6 +46,7 @@ export const ImagePreviewModal = React.memo(({
   pageName: string;
   onCopy?: (item: string, colKey: string, pageName: string) => void;
   getImageUrl: (val: any) => string;
+  actionsDisabled?: boolean;
 }) => {
   const [replaceMode, setReplaceMode] = useState<'url' | 'file'>('url');
   const [replaceUrl, setReplaceUrl] = useState('');
@@ -372,9 +374,9 @@ export const ImagePreviewModal = React.memo(({
           <div className="flex gap-2 flex-wrap">
             {!isConfirmingDelete ? (
               <>
-                <Button variant="blue" onClick={onEditRow}><Edit size={14} /> Edit Row</Button>
-                <Button variant="green" onClick={() => setShowReplacePanel(!showReplacePanel)}><RefreshCw size={14} /> Replace Image</Button>
-                <Button variant="red" onClick={() => setIsConfirmingDelete(true)}><Trash2 size={14} /> Delete Image</Button>
+                <Button variant="blue" onClick={onEditRow} disabled={actionsDisabled} title={actionsDisabled ? "Not available from overview" : undefined}><Edit size={14} /> Edit Row</Button>
+                <Button variant="green" onClick={() => setShowReplacePanel(!showReplacePanel)} disabled={actionsDisabled} title={actionsDisabled ? "Not available from overview" : undefined}><RefreshCw size={14} /> Replace Image</Button>
+                <Button variant="red" onClick={() => setIsConfirmingDelete(true)} disabled={actionsDisabled} title={actionsDisabled ? "Not available from overview" : undefined}><Trash2 size={14} /> Delete Image</Button>
               </>
             ) : (
               <div className="flex flex-col gap-2 w-full bg-red-50 p-3 rounded-md border border-red-200">
