@@ -139,7 +139,7 @@ export function RangeSumModal({
     const imageCol = columns.find(c => c.type === 'image');
     if (imageCol) res.push(imageCol);
     for (const c of columns) {
-      if (c.type !== 'sale_tracker' && c.type !== 'image' && c.key !== 'total_qty' && c.key !== 'remaining_qty') {
+      if (c.type !== 'sale_tracker' && c.type !== 'image' && c.key !== 'total_qty' && c.key !== 'remaining_qty' && c.key !== 'sr' && c.type !== 'system_serial') {
         res.push(c);
       }
     }
@@ -287,8 +287,8 @@ export function RangeSumModal({
     );
   };
 
-  const renderSourceChip = (sourceName: string, val: any) => {
-    const render = resolveChipRender(sourceName);
+  const renderSourceChip = (sourceName: string, val: any, color?: string) => {
+    const render = resolveChipRender(color || sourceName);
     return (
       <span
         key={sourceName}
@@ -309,7 +309,7 @@ export function RangeSumModal({
       width="95vw"
       noScroll={true}
     >
-      <div className="flex flex-col h-[85vh]">
+      <div className="flex flex-col h-[calc(90vh-90px)]">
         
         {/* Range bar */}
         <div className="flex items-center gap-4 mb-4 mt-2">
@@ -460,8 +460,8 @@ export function RangeSumModal({
                         bgCls = "bg-blue-50/30 group-hover:bg-blue-50";
                         cellContent = (
                           <div className="flex flex-col items-start w-full">
-                            {totalSources.map((s: any) => renderSourceChip(s.source, s.qty))}
-                            {totalSources.length === 0 && <span className="text-gray-400">-</span>}
+                            {totalSources.map((s: any) => renderSourceChip(s.source, s.qty, s.color))}
+                            {totalSources.length === 0 && <span className="text-gray-400 font-medium text-xs">0</span>}
                           </div>
                         );
                       } else if (col.key === 'remaining_qty') {
@@ -472,9 +472,9 @@ export function RangeSumModal({
                             {totalSources.map((s: any) => {
                               const used = getSumForSourceAcrossKeys(row, s.source, allSaleKeys);
                               const remain = parseFloat(String(s.qty)) - used;
-                              return renderSourceChip(s.source, remain);
+                              return renderSourceChip(s.source, remain, s.color);
                             })}
-                            {totalSources.length === 0 && <span className="text-gray-400">-</span>}
+                            {totalSources.length === 0 && <span className="text-gray-400 font-medium text-xs">0</span>}
                           </div>
                         );
                       } else if (col.key === '__range_sum') {
@@ -484,16 +484,14 @@ export function RangeSumModal({
                             {totalSources.map((s: any) => {
                               const sum = getSumForSourceAcrossKeys(row, s.source, keys);
                               allSourcesSum += sum;
-                              return renderSourceChip(s.source, sum);
+                              return renderSourceChip(s.source, sum, s.color);
                             })}
-                            {totalSources.length === 0 && <span className="text-gray-400">-</span>}
-                            {totalSources.length > 0 && (
-                              <div className="mt-2 w-full pt-1 border-t border-green-200/50">
-                                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-green-200 text-green-900 shadow-sm border border-green-300">
-                                  Total: {allSourcesSum}
-                                </span>
-                              </div>
-                            )}
+                            {totalSources.length === 0 && <span className="text-gray-400 font-medium text-xs">0</span>}
+                            <div className="mt-2 w-full pt-1 border-t border-green-200/50">
+                              <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-green-200 text-green-900 shadow-sm border border-green-300">
+                                Total: {allSourcesSum}
+                              </span>
+                            </div>
                           </div>
                         );
                       } else if (col.type === 'sale_tracker') {
@@ -508,7 +506,7 @@ export function RangeSumModal({
                           } else {
                             cellContent = (
                               <div className="flex flex-col items-start w-full">
-                                {parsed.map((s: any) => renderSourceChip(s.source, s.qty))}
+                                {parsed.map((s: any) => renderSourceChip(s.source, s.qty, s.color))}
                               </div>
                             );
                           }
