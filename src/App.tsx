@@ -1,3 +1,4 @@
+import { shouldDisableImagePreviewActions } from "./lib/imagePreviewActions";
 import { RetiredSourcesOverviewModal } from "./components/RetiredSourcesOverviewModal";
 import { setPageVersion } from './lib/pageVersion';
 import { ActiveSourcesOverviewModal } from "./components/ActiveSourcesOverviewModal";
@@ -2808,7 +2809,7 @@ function AppContent() {
       <ImagePreviewModal
         isOpen={modals.imagePreview}
         onClose={closeAllModals}
-        actionsDisabled={previewContext?.disableActions === true}
+        actionsDisabled={shouldDisableImagePreviewActions(previewContext, state.pageConfigs)}
         row={
           previewContext
             ? (state.pageRows[previewContext.pageName] || []).find(
